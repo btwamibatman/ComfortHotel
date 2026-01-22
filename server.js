@@ -1,8 +1,12 @@
+require('dotenv').config();
+
 const express = require('express');
 const path = require('path');
 const app = express();
 const sqlite3 = require('sqlite3').verbose();
-const dbPath = path.join(__dirname, 'database.sqlite');
+
+const PORT = process.env.PORT || 3000;
+const dbPath = path.join(__dirname, process.env.DB_PATH || 'database.sqlite');
 const db = new sqlite3.Database(dbPath);
 
 app.use(express.static('public'));
@@ -216,7 +220,7 @@ app.use((req, res) => {
 
 initDb()
   .then(() => {
-    app.listen(3000, () => console.log('Server running on http://localhost:3000'));
+    app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
   })
   .catch((err) => {
     console.error('Failed to initialize database:', err);
