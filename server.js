@@ -78,6 +78,13 @@ app.get('/api/info', (req, res) => {
   });
 });
 
+app.get('/version', (req, res) => {
+  res.status(200).json({
+    version: '1.1',
+    updatedAt: '2026-01-29'
+  });
+});
+
 app.get('/api/contacts', (req, res) => {
   db.all(
     'SELECT id, name, email, message, created_at FROM contacts ORDER BY id ASC',
