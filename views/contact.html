@@ -17,10 +17,11 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="rooms.html">Rooms</a></li>
-        <li class="nav-item"><a class="nav-link" href="booking.html">Booking</a></li>
+        <li class="nav-item"><a class="nav-link" href="/rooms">Rooms</a></li>
+        <li class="nav-item"><a class="nav-link" href="/booking">Booking</a></li>
         <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
         <li class="nav-item"><a class="nav-link active" href="/contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
       </ul>
       <select id="currencySelector" class="form-select form-select-sm ms-3" style="width: auto;">
         <option value="USD">USD ($)</option>
@@ -36,27 +37,33 @@
   <div class="row">
     <div class="col-md-6">
       <h2 class="mb-4">Contact Us</h2>
-      <form id="contactForm" method="POST" action="/contact" class="needs-validation" novalidate>
-        <div class="mb-3">
-          <label for="name" class="form-label">Name</label>
-          <input type="text" class="form-control" id="name" name="name" required>
-          <div class="invalid-feedback">Please enter your name.</div>
-        </div>
+      
+      <!-- Create Contact Form -->
+      <div class="card">
+        <div class="card-body">
+          <form id="contactForm" method="POST" action="/contact" class="needs-validation" novalidate>
+            <div class="mb-3">
+              <label for="name" class="form-label">Name</label>
+              <input type="text" class="form-control" id="name" name="name" required>
+              <div class="invalid-feedback">Please enter your name.</div>
+            </div>
 
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-          <div class="invalid-feedback">Please enter a valid email address.</div>
-        </div>
+            <div class="mb-3">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" class="form-control" id="email" name="email" required>
+              <div class="invalid-feedback">Please enter a valid email address.</div>
+            </div>
 
-        <div class="mb-3">
-          <label for="message" class="form-label">Message</label>
-          <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
-          <div class="invalid-feedback">Please enter your message.</div>
-        </div>
+            <div class="mb-3">
+              <label for="message" class="form-label">Message</label>
+              <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+              <div class="invalid-feedback">Please enter your message.</div>
+            </div>
 
-        <button type="submit" class="btn btn-danger btn-lg">Send Message</button>
-      </form>
+            <button type="submit" class="btn btn-danger btn-lg">Send Message</button>
+          </form>
+        </div>
+      </div>
     </div>
 
     <div class="col-md-6">

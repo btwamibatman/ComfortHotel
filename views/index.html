@@ -16,15 +16,13 @@
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-  <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-  <li class="nav-item"><a class="nav-link" href="/search?q=test">Search</a></li>
-  <li class="nav-item"><a class="nav-link" href="/item/1">Item</a></li>
-  <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
-  <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-  <li class="nav-item"><a class="nav-link" href="/api/info">API Info</a></li>
-</ul>
-
-<a href="/item/1" class="btn btn-primary">Test Item 1</a>
+        <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/rooms">Rooms</a></li>
+        <li class="nav-item"><a class="nav-link" href="/booking">Booking</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
+        <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link" href="/admin">Admin</a></li>
+      </ul>
 
       <select id="currencySelector" class="form-select form-select-sm ms-3" style="width: auto;">
         <option value="USD">USD ($)</option>
@@ -43,7 +41,7 @@
     <div class="welcome-section text-center">
       <h2 class="display-4 mb-4">Welcome to Comfort Hotel</h2>
       <p class="lead">Relax and enjoy your stay. Book a room today and experience comfort like never before.</p>
-      <a href="rooms.html" class="btn btn-danger btn-lg mt-3">See our rooms →</a>
+      <a href="/rooms" class="btn btn-danger btn-lg mt-3">See our rooms →</a>
     </div>
   </div>
 </div>
@@ -52,25 +50,18 @@
   <div class="col-md-8 mx-auto">
     <div class="card">
       <div class="card-body">
-        <h5 class="card-title mb-3">API Test Links</h5>
-        <ul class="list-group">
-          <li class="list-group-item"><a href="/api/contacts">/api/contacts</a></li>
-          <li class="list-group-item"><a href="/api/contacts/1">/api/contacts/1</a></li>
-        </ul>
-        <small class="text-muted d-block mt-2">If id=1 does not exist yet, the second link will return 404.</small>
+        <h5 class="card-title mb-3">Quick Actions</h5>
+        <div class="d-grid gap-2">
+          <a href="/booking" class="btn btn-danger">Book a Room</a>
+          <a href="/rooms" class="btn btn-outline-danger">View Rooms</a>
+          <a href="/contact" class="btn btn-outline-danger">Contact Us</a>
+          <a href="/admin" class="btn btn-outline-secondary">Admin Panel</a>
+        </div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="row my-5">
-  <div class="col-md-6 mx-auto">
-    <form action="/search" method="GET" class="d-flex">
-      <input type="text" name="q" class="form-control me-2" placeholder="Search..." required>
-      <button type="submit" class="btn btn-danger">Search</button>
-    </form>
-  </div>
-</div>
 
 
   <div class="features mt-5">
@@ -150,10 +141,15 @@
 let exchangeRates = {};
 const basePrices = { single: 50, double: 90, suite: 150 };
 
+function loadCurrency() {
+  const saved = localStorage.getItem('selectedCurrency');
+  if (saved) {
+    $('#currencySelector').val(saved);
+  }
+}
+
 $(document).ready(function() {
   loadCurrency();
-  fetchWeather();
-  fetchExchangeRates();
 
   $('.feature-box').hide().fadeIn(1000);
   
@@ -168,6 +164,11 @@ $(document).ready(function() {
     function() { $(this).animate({ padding: '30px' }, 200); },
     function() { $(this).animate({ padding: '24px' }, 200); }
   );
+
+  $('#currencySelector').change(function() {
+    const currency = $(this).val();
+    localStorage.setItem('selectedCurrency', currency);
+  });
 })
 </script>
 
