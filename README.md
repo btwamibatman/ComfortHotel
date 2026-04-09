@@ -1,7 +1,5 @@
 # 🏨 Comfort Hoetel - Hotel Booking System
 
-## Web Programming - Assignment 4: Secure Session-Based Authentication
-
 ### 📌 Quick Start
 
 ```bash
@@ -25,7 +23,7 @@ npm start
 
 ---
 
-## ✅ Assignment Requirements Implementation
+## ✅ Implementations
 
 ### 🔐 1. Session-Based Authentication
 - ✅ Express-session with MongoDB store
