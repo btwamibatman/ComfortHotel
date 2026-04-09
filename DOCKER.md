@@ -23,6 +23,8 @@ docker compose up --build -d
 
 Open:
 - http://localhost:3000
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3001
 
 ## 4. First-time DB bootstrap (optional but recommended)
 
@@ -41,3 +43,19 @@ docker compose down -v
 
 - `down` keeps MongoDB volume.
 - `down -v` removes MongoDB data as well.
+
+## 6. Monitoring dashboard
+
+Grafana is preconfigured with:
+- Prometheus data source (`http://prometheus:9090`)
+- Dashboard: `Hotel Booking System Monitoring`
+
+Default Grafana login:
+- user: `admin`
+- password: `admin`
+
+If the dashboard does not appear immediately, restart Grafana:
+
+```bash
+docker compose restart grafana
+```
