@@ -18,8 +18,9 @@ npm start
 
 **рџљЂ Access the application:**
 - Public Site: http://localhost:3000
-- Admin Login: http://localhost:3000/admin
-- Credentials: `admin / REDACTED_ADMIN_PASSWORD`
+- Admin Login: http://localhost:3000/admin/login
+- Staff Login: http://localhost:3000/staff/login
+- Credentials are configured in `.env`
 
 ---
 
@@ -131,13 +132,13 @@ cookie: {
 
 ### Authentication Endpoints
 
-#### POST `/admin/login`
+#### POST `/auth/admin/login`
 Login with credentials
 ```json
 Request:
 {
-  "username": "admin",
-  "password": "REDACTED_ADMIN_PASSWORD"
+  "username": "<ADMIN_USERNAME>",
+  "password": "<ADMIN_PASSWORD>"
 }
 
 Response (200):
@@ -157,7 +158,7 @@ Error (401):
 }
 ```
 
-#### POST `/admin/logout`
+#### POST `/auth/logout`
 Destroy session
 ```json
 Response (200):
@@ -297,8 +298,8 @@ In our app:
 ## рџЋЇ Demo Scenarios for Defense
 
 ### Scenario 1: Demonstrate Full CRUD
-1. Open http://localhost:3000/admin
-2. Login with `admin / REDACTED_ADMIN_PASSWORD`
+1. Open http://localhost:3000/admin/login
+2. Login with credentials from `.env`
 3. **CREATE**: Click "Create New Booking" в†’ Fill form в†’ Save
 4. **READ**: View booking in table with all details
 5. **UPDATE**: Click edit icon в†’ Modify fields в†’ Save
@@ -457,3 +458,4 @@ Before deploying to production (Render, Railway, etc.):
 }
 
 For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
+
