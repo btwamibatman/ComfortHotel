@@ -1,4 +1,4 @@
-﻿# рџЏЁ Comfort Hoetel - Hotel Booking System
+﻿# Comfort Hotel - Hotel Booking System
 
 ### рџ“Њ Quick Start
 
@@ -23,44 +23,44 @@ npm start
 
 ---
 
-## вњ… Implementations
+##  Implementations
 
 ### рџ”ђ 1. Session-Based Authentication
-- вњ… Express-session with MongoDB store
-- вњ… Session persists between requests
-- вњ… Session ID stored in secure cookie
-- вњ… Login via Web UI
-- вњ… Sessions expire after 24 hours
+-  Express-session with MongoDB store
+-  Session persists between requests
+-  Session ID stored in secure cookie
+-  Login via Web UI
+-  Sessions expire after 24 hours
 
 ### рџ”’ 2. Password Security
-- вњ… Bcrypt hashing (salt rounds: 10)
-- вњ… NO plain-text password storage
-- вњ… Generic error messages ("Invalid credentials")
-- вњ… Passwords never sent to client
+-  Bcrypt hashing (salt rounds: 10)
+-  NO plain-text password storage
+-  Generic error messages ("Invalid credentials")
+-  Passwords never sent to client
 
 ### рџЌЄ 3. Cookie Security
-- вњ… **HttpOnly flag** - prevents XSS attacks
-- вњ… **Secure flag** - HTTPS in production
-- вњ… **SameSite: strict** - CSRF protection
-- вњ… NO sensitive data in cookies
+-  **HttpOnly flag** - prevents XSS attacks
+-  **Secure flag** - HTTPS in production
+-  **SameSite: strict** - CSRF protection
+-  NO sensitive data in cookies
 
 ### рџ›ЎпёЏ 4. Authentication & Authorization
-- вњ… Middleware-based authentication (`isAuthenticated`)
-- вњ… Protected write operations (POST, PUT, DELETE)
-- вњ… Unauthorized users CANNOT modify data
-- вњ… Authorization based on user roles
+-  Middleware-based authentication (`isAuthenticated`)
+-  Protected write operations (POST, PUT, DELETE)
+-  Unauthorized users CANNOT modify data
+-  Authorization based on user roles
 
 ### рџ“Љ 5. Production Web Interface
-- вњ… Full CRUD via Web UI (no Postman needed)
-- вњ… Data displayed in responsive table
-- вњ… CREATE bookings via modal form
-- вњ… UPDATE bookings with inline editing
-- вњ… DELETE with confirmation
-- вњ… Dynamic data loading from API
+-  Full CRUD via Web UI (no Postman needed)
+-  Data displayed in responsive table
+-  CREATE bookings via modal form
+-  UPDATE bookings with inline editing
+-  DELETE with confirmation
+-  Dynamic data loading from API
 
 ### рџЏ·пёЏ 6. Domain Data (Bookings)
-- вњ… NOT generic "items" - specific to hotel domain
-- вњ… **12 meaningful fields** per booking:
+-  NOT generic "items" - specific to hotel domain
+-  **12 meaningful fields** per booking:
   1. `roomName` - Room name
   2. `roomType` - Room category
   3. `guestName` - Guest full name
@@ -73,16 +73,16 @@ npm start
   10. `totalPrice` - Booking cost
   11. `specialRequests` - Special notes
   12. `status` - Booking status
-- вњ… **25 realistic records** in database
-- вњ… Logically structured data
+-  **25 realistic records** in database
+-  Logically structured data
 
 ### вњ”пёЏ 7. Validation & Error Handling
-- вњ… Email format validation
-- вњ… Phone format validation
-- вњ… Date logic validation (check-out > check-in)
-- вњ… Number range validation (guests: 1-10)
-- вњ… Correct HTTP status codes (200, 201, 400, 401, 403, 404, 500)
-- вњ… Application never crashes on invalid requests
+-  Email format validation
+-  Phone format validation
+-  Date logic validation (check-out > check-in)
+-  Number range validation (guests: 1-10)
+-  Correct HTTP status codes (200, 201, 400, 401, 403, 404, 500)
+-  Application never crashes on invalid requests
 
 ---
 
