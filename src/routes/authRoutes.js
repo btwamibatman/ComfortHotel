@@ -3,9 +3,14 @@ const authController = require('../controllers/authController');
 
 const router = express.Router();
 
+router.post('/auth/admin/login', authController.adminLogin);
+router.post('/auth/staff/login', authController.userLogin);
+router.post('/auth/logout', authController.logout);
+router.get('/api/auth/status', authController.authStatus);
+
+// Backward compatibility routes
 router.post('/admin/login', authController.adminLogin);
 router.post('/user/login', authController.userLogin);
 router.post('/admin/logout', authController.logout);
-router.get('/api/auth/status', authController.authStatus);
 
 module.exports = router;
