@@ -32,6 +32,18 @@ async function login({ username, password, roleRule }) {
     };
   }
 
+  if (roleRule === 'manager-only' && user.role !== 'manager') {
+    return {
+      error: {
+        status: 403,
+        body: {
+          error: 'Access denied. Manager privileges required.',
+          hint: 'Please use manager credentials',
+        },
+      },
+    };
+  }
+
   const passwordMatch = await bcrypt.compare(password, user.password);
   if (!passwordMatch) {
     return { error: { status: 401, body: { error: 'Invalid credentials' } } };

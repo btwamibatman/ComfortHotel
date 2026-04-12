@@ -61,7 +61,7 @@ async function userLogin(req, res) {
   try {
     const result = await authService.login({
       ...credentials,
-      roleRule: 'non-admin-only',
+      roleRule: 'manager-only',
     });
 
     if (result.error) {
