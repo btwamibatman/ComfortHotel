@@ -53,6 +53,30 @@ async function createBooking(req, res) {
   }
 }
 
+async function createPublicBooking(req, res) {
+  const validation = bookingsService.validateBookingInput(req.body);
+  if (validation.error) {
+    return res.status(400).json({ error: validation.error });
+  }
+
+  try {
+    const result = await bookingsService.createBooking({
+      ...validation.data,
+      status: 'pending',
+      created_at: new Date(),
+      created_by: 'public_form',
+    });
+
+    return res.status(201).json({
+      message: 'Booking request submitted successfully',
+      id: result.insertedId,
+    });
+  } catch (error) {
+    console.error('Database error:', error);
+    return res.status(500).json({ error: 'Database error' });
+  }
+}
+
 async function updateBooking(req, res) {
   if (!isValidObjectId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
@@ -104,6 +128,7 @@ module.exports = {
   listBookings,
   getBookingById,
   createBooking,
+  createPublicBooking,
   updateBooking,
   deleteBooking,
 };
