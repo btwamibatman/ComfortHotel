@@ -1,0 +1,7 @@
+FROM nginx:1.27-alpine
+
+# Serve static frontend pages and assets
+COPY views/ /usr/share/nginx/html/
+COPY public/ /usr/share/nginx/html/
+
+EXPOSE 80
