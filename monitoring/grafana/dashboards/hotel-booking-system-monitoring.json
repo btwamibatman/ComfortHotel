@@ -73,20 +73,12 @@
                                                                                "mode":  "absolute",
                                                                                "steps":  [
                                                                                              {
-                                                                                                 "color":  "red",
-                                                                                                 "value":  null
-                                                                                             },
-                                                                                             {
-                                                                                                 "color":  "orange",
-                                                                                                 "value":  95
-                                                                                             },
-                                                                                             {
                                                                                                  "color":  "green",
-                                                                                                 "value":  99
+                                                                                                 "value":  null
                                                                                              }
                                                                                          ]
                                                                            },
-                                                            "unit":  "percent"
+                                                            "unit":  "reqps"
                                                         },
                                            "overrides":  [
 
@@ -116,20 +108,13 @@
                        "targets":  [
                                        {
                                            "editorMode":  "code",
-                                           "expr":  "100 * sum(rate(http_requests_total{route=~\"/api/bookings.*\",status_code=~\"2..\"}[5m])) / clamp_min(sum(rate(http_requests_total{route=~\"/api/bookings.*\"}[5m])), 0.001)",
-                                           "legendFormat":  "Booking success rate",
+                                           "expr":  "sum(rate(http_requests_total[1m]))",
+                                           "legendFormat":  "RPS",
                                            "range":  true,
                                            "refId":  "A"
-                                       },
-                                       {
-                                           "editorMode":  "code",
-                                           "expr":  "vector(99)",
-                                           "legendFormat":  "SLO target (99%)",
-                                           "range":  true,
-                                           "refId":  "B"
                                        }
                                    ],
-                       "title":  "Booking Success Rate SLI/SLO (%)",
+                       "title":  "Traffic (RPS)",
                        "type":  "timeseries"
                    },
                    {
@@ -224,13 +209,13 @@
                        "targets":  [
                                        {
                                            "editorMode":  "code",
-                                           "expr":  "100 * sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total[5m])), 0.001)",
-                                           "legendFormat":  "5xx %",
+                                           "expr":  "100 * (sum(rate(http_requests_total{status_code=~\"5..\"}[5m])) or vector(0)) / clamp_min(sum(rate(http_requests_total[5m])), 0.001)",
+                                           "legendFormat":  "5xx error rate",
                                            "range":  true,
                                            "refId":  "A"
                                        }
                                    ],
-                       "title":  "Error Rate (%)",
+                       "title":  "Errors (%)",
                        "type":  "timeseries"
                    },
                    {
@@ -287,11 +272,11 @@
                                                                                              },
                                                                                              {
                                                                                                  "color":  "orange",
-                                                                                                 "value":  0.5
+                                                                                                 "value":  0.3
                                                                                              },
                                                                                              {
                                                                                                  "color":  "red",
-                                                                                                 "value":  1.5
+                                                                                                 "value":  1
                                                                                              }
                                                                                          ]
                                                                            },
@@ -325,20 +310,13 @@
                        "targets":  [
                                        {
                                            "editorMode":  "code",
-                                           "expr":  "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{route=~\"/api/bookings.*\"}[5m])) by (le))",
-                                           "legendFormat":  "Booking API P95 latency",
+                                           "expr":  "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le))",
+                                           "legendFormat":  "P95 latency",
                                            "range":  true,
                                            "refId":  "A"
-                                       },
-                                       {
-                                           "editorMode":  "code",
-                                           "expr":  "vector(0.3)",
-                                           "legendFormat":  "SLO target (0.3s)",
-                                           "range":  true,
-                                           "refId":  "B"
                                        }
                                    ],
-                       "title":  "Booking API Latency P95 SLI/SLO (sec)",
+                       "title":  "Latency P95 (sec)",
                        "type":  "timeseries"
                    },
                    {
@@ -395,15 +373,15 @@
                                                                                              },
                                                                                              {
                                                                                                  "color":  "orange",
-                                                                                                 "value":  300
+                                                                                                 "value":  0.7
                                                                                              },
                                                                                              {
                                                                                                  "color":  "red",
-                                                                                                 "value":  500
+                                                                                                 "value":  0.9
                                                                                              }
                                                                                          ]
                                                                            },
-                                                            "unit":  "decbytes"
+                                                            "unit":  "percentunit"
                                                         },
                                            "overrides":  [
 
@@ -433,14 +411,81 @@
                        "targets":  [
                                        {
                                            "editorMode":  "code",
-                                           "expr":  "process_resident_memory_bytes",
-                                           "legendFormat":  "Process RSS",
+                                           "expr":  "clamp_min(rate(process_cpu_seconds_total[1m]), 0)",
+                                           "legendFormat":  "CPU saturation",
                                            "range":  true,
                                            "refId":  "A"
                                        }
                                    ],
-                       "title":  "Memory Usage",
+                       "title":  "Saturation (CPU)",
                        "type":  "timeseries"
+                   },
+                   {
+                       "datasource":  {
+                                          "type":  "prometheus",
+                                          "uid":  "prometheus"
+                                      },
+                       "fieldConfig":  {
+                                           "defaults":  {
+                                                            "color":  {
+                                                                          "mode":  "thresholds"
+                                                                      },
+                                                            "mappings":  [
+
+                                                                         ],
+                                                            "max":  1,
+                                                            "min":  0,
+                                                            "thresholds":  {
+                                                                               "mode":  "absolute",
+                                                                               "steps":  [
+                                                                                             {
+                                                                                                 "color":  "red",
+                                                                                                 "value":  null
+                                                                                             },
+                                                                                             {
+                                                                                                 "color":  "green",
+                                                                                                 "value":  0.99
+                                                                                             }
+                                                                                         ]
+                                                                           },
+                                                            "unit":  "percentunit"
+                                                        },
+                                           "overrides":  [
+
+                                                         ]
+                                       },
+                       "gridPos":  {
+                                       "h":  8,
+                                       "w":  24,
+                                       "x":  0,
+                                       "y":  16
+                                   },
+                       "id":  5,
+                       "options":  {
+                                       "colorMode":  "value",
+                                       "graphMode":  "none",
+                                       "justifyMode":  "center",
+                                       "orientation":  "auto",
+                                       "reduceOptions":  {
+                                                             "calcs":  [
+                                                                           "lastNotNull"
+                                                                       ],
+                                                             "fields":  "",
+                                                             "values":  false
+                                                         },
+                                       "textMode":  "value_and_name"
+                                   },
+                       "targets":  [
+                                       {
+                                           "editorMode":  "code",
+                                           "expr":  "1 - (sum(rate(http_requests_total{route=~\"/api/bookings.*\",status_code=~\"5..\"}[30d])) / clamp_min(sum(rate(http_requests_total{route=~\"/api/bookings.*\"}[30d])), 0.001))",
+                                           "legendFormat":  "Booking success (30d)",
+                                           "range":  true,
+                                           "refId":  "A"
+                                       }
+                                   ],
+                       "title":  "SLO Compliance (Booking Success, 30d)",
+                       "type":  "stat"
                    }
                ],
     "refresh":  "10s",
@@ -448,7 +493,8 @@
     "style":  "dark",
     "tags":  [
                  "comforthotel",
-                 "monitoring"
+                 "monitoring",
+                 "golden-signals"
              ],
     "templating":  {
                        "list":  [
@@ -456,7 +502,7 @@
                                 ]
                    },
     "time":  {
-                 "from":  "now-15m",
+                 "from":  "now-6h",
                  "to":  "now"
              },
     "timepicker":  {
@@ -465,6 +511,6 @@
     "timezone":  "browser",
     "title":  "Hotel Booking System Monitoring",
     "uid":  "hotel-booking-kiss",
-    "version":  2,
+    "version":  3,
     "weekStart":  ""
 }
