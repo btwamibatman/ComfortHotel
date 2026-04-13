@@ -1,0 +1,72 @@
+﻿services:
+  mongo:
+    image: mongo:7
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  app:
+    image: comforthotel-app:latest
+    environment:
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongo:27017
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  prometheus:
+    image: prom/prometheus:latest
+    configs:
+      - source: prometheus_config
+        target: /etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_PATHS_PROVISIONING: /etc/grafana/provisioning
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    configs:
+      - source: grafana_datasource
+        target: /etc/grafana/provisioning/datasources/datasource.yml
+      - source: grafana_dashboards_provider
+        target: /etc/grafana/provisioning/dashboards/dashboard.yml
+      - source: grafana_dashboard_json
+        target: /var/lib/grafana/dashboards/hotel-booking-system-monitoring.json
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+volumes:
+  mongo_data:
+  grafana_data:
+
+configs:
+  prometheus_config:
+    file: ./monitoring/prometheus/prometheus.yml
+  grafana_datasource:
+    file: ./monitoring/grafana/provisioning/datasources/datasource.yml
+  grafana_dashboards_provider:
+    file: ./monitoring/grafana/provisioning/dashboards/dashboard.yml
+  grafana_dashboard_json:
+    file: ./monitoring/grafana/dashboards/hotel-booking-system-monitoring.json
