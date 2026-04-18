@@ -31,7 +31,7 @@ async function getBookingById(req, res) {
 }
 
 async function createBooking(req, res) {
-  const validation = bookingsService.validateBookingInput(req.body);
+  const validation = await bookingsService.validateBookingInput(req.body);
   if (validation.error) {
     return res.status(400).json({ error: validation.error });
   }
@@ -64,7 +64,7 @@ async function createBooking(req, res) {
 }
 
 async function createPublicBooking(req, res) {
-  const validation = bookingsService.validateBookingInput(req.body);
+  const validation = await bookingsService.validateBookingInput(req.body);
   if (validation.error) {
     return res.status(400).json({ error: validation.error });
   }
@@ -101,7 +101,7 @@ async function updateBooking(req, res) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
-  const validation = bookingsService.validateBookingInput(req.body, { allowStatus: true });
+  const validation = await bookingsService.validateBookingInput(req.body, { allowStatus: true });
   if (validation.error) {
     return res.status(400).json({ error: validation.error });
   }
