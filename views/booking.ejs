@@ -18,9 +18,9 @@
                 <label for="roomType" class="form-label">Room Type</label>
                 <select class="form-control" id="roomType" name="roomType" required>
                   <option value="">Select Room Type</option>
-                  <option value="single">Single Room</option>
-                  <option value="double">Double Room</option>
-                  <option value="suite">Luxury Suite</option>
+                  <% rooms.forEach(room => { %>
+                    <option value="<%= room.type %>"><%= room.name %></option>
+                  <% }); %>
                 </select>
               </div>
             </div>
@@ -86,7 +86,7 @@
 <%- include('partials/footer') %>
 
 <script>
-const roomPrices = { single: 50, double: 90, suite: 150 };
+const roomPrices = JSON.parse('<%- JSON.stringify(rooms.reduce((acc, room) => ({ ...acc, [room.type]: room.price }), {})) %>');
 
 $(document).ready(function() {
   loadCurrency();

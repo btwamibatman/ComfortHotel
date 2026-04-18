@@ -6,45 +6,28 @@
   
   <div class="mb-4">
     <button class="btn btn-outline-danger filter-btn active" data-filter="all">All Rooms</button>
-    <button class="btn btn-outline-danger filter-btn" data-filter="single">Single</button>
-    <button class="btn btn-outline-danger filter-btn" data-filter="double">Double</button>
-    <button class="btn btn-outline-danger filter-btn" data-filter="suite">Suite</button>
+    <% rooms.forEach(room => { %>
+      <button class="btn btn-outline-danger filter-btn" data-filter="<%= room.type %>"><%= room.name %></button>
+    <% }); %>
   </div>
 
   <div class="row g-4" id="roomsContainer">
-    <div class="col-md-4 room-item" data-category="single">
+    <% rooms.forEach((room, index) => { 
+      // Pick a random image based on index for variety
+      const imgIndex = (index % 3) + 1;
+    %>
+    <div class="col-md-4 room-item" data-category="<%= room.type %>">
       <div class="card room-card h-100">
-        <img src="1.jpg" class="card-img-top gallery-img" alt="Single Room" data-room="single">
+        <img src="<%= imgIndex %>.jpg" class="card-img-top gallery-img" alt="<%= room.name %>" data-room="<%= room.type %>">
         <div class="card-body">
-          <h5 class="card-title">Single Room</h5>
-          <p class="card-text">Perfect for solo travelers.</p>
-          <p class="card-text"><strong>Price: <span class="room-price" data-base="50">$50</span>/night</strong></p>
-          <a href="/booking?roomType=single&roomName=Single Room" class="btn btn-danger">Book Now</a>
+          <h5 class="card-title"><%= room.name %></h5>
+          <p class="card-text">Total available: <%= room.count %></p>
+          <p class="card-text"><strong>Price: <span class="room-price" data-base="<%= room.price %>">$<%= room.price %></span>/night</strong></p>
+          <a href="/booking?roomType=<%= room.type %>&roomName=<%= encodeURIComponent(room.name) %>" class="btn btn-danger">Book Now</a>
         </div>
       </div>
     </div>
-    <div class="col-md-4 room-item" data-category="double">
-      <div class="card room-card h-100">
-        <img src="2.jpg" class="card-img-top gallery-img" alt="Double Room" data-room="double">
-        <div class="card-body">
-          <h5 class="card-title">Double Room</h5>
-          <p class="card-text">Comfortable stay for two guests.</p>
-          <p class="card-text"><strong>Price: <span class="room-price" data-base="90">$90</span>/night</strong></p>
-          <a href="/booking?roomType=double&roomName=Double Room" class="btn btn-danger">Book Now</a>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4 room-item" data-category="suite">
-      <div class="card room-card h-100">
-        <img src="3.jpg" class="card-img-top gallery-img" alt="Luxury Suite" data-room="suite">
-        <div class="card-body">
-          <h5 class="card-title">Luxury Suite</h5>
-          <p class="card-text">Spacious suite with luxury services and city view.</p>
-          <p class="card-text"><strong>Price: <span class="room-price" data-base="150">$150</span>/night</strong></p>
-          <a href="/booking?roomType=suite&roomName=Luxury Suite" class="btn btn-danger">Book Now</a>
-        </div>
-      </div>
-    </div>
+    <% }); %>
   </div>
 
   <h2 class="mt-5">Room Pricing Table</h2>
@@ -53,25 +36,17 @@
       <tr>
         <th>Room Type</th>
         <th>Price/Night</th>
-        <th>Max Guests</th>
+        <th>Total Available</th>
       </tr>
     </thead>
     <tbody>
+      <% rooms.forEach(room => { %>
       <tr>
-        <td>Single Room</td>
-        <td><span class="table-price" data-base="50">$50</span></td>
-        <td>1</td>
+        <td><%= room.name %></td>
+        <td><span class="table-price" data-base="<%= room.price %>">$<%= room.price %></span></td>
+        <td><%= room.count %></td>
       </tr>
-      <tr>
-        <td>Double Room</td>
-        <td><span class="table-price" data-base="90">$90</span></td>
-        <td>2</td>
-      </tr>
-      <tr>
-        <td>Luxury Suite</td>
-        <td><span class="table-price" data-base="150">$150</span></td>
-        <td>4</td>
-      </tr>
+      <% }); %>
     </tbody>
   </table>
 </main>

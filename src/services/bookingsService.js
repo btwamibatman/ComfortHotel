@@ -1,7 +1,7 @@
 const bookingsRepository = require('../repositories/bookingsRepository');
 const { isValidEmail, isValidPhone, validateBookingDates } = require('../utils/validators');
 const { buildListQuery } = require('../utils/query');
-const ROOMS = require('../config/rooms');
+const roomsService = require('./roomsService');
 
 const VALID_STATUSES = ['pending', 'confirmed', 'checked-in', 'completed', 'cancelled'];
 
@@ -25,8 +25,9 @@ async function getBookingById(id) {
   return bookingsRepository.getBookingById(id);
 }
 
-function validateBookingInput(payload, { allowStatus = false } = {}) {
+async function validateBookingInput(payload, { allowStatus = false } = {}) {
   const {
+    roomName,
     roomType,
     guestName,
     guestEmail,
@@ -41,7 +42,8 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
     return { error: 'Missing required fields' };
   }
 
-  if (!ROOMS[roomType]) {
+  const roomConfig = await roomsService.getRoomByType(roomType);
+  if (!roomConfig) {
     return { error: 'Invalid room type' };
   }
 
@@ -72,7 +74,6 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
   const checkOut = new Date(checkOutDate);
   const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
   
-  const roomConfig = ROOMS[roomType];
   const calculatedPrice = roomConfig.price * duration * guests;
 
   return {
@@ -93,9 +94,21 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
   };
 }
 
-async function checkAvailability(roomType, checkInDate, checkOutDate, excludeId = null) {
-  const overlapCount = await bookingsRepository.countOverlappingBookings(roomType, checkInDate, checkOutDate, excludeId);
-  return overlapCount < ROOMS[roomType].count;
+async function checkAvailability(roomType, checkInDate, checkOutDate, excludeBookingId = null) {
+  const checkIn = new Date(checkInDate);
+  const checkOut = new Date(checkOutDate);
+
+  const overlapCount = await bookingsRepository.countOverlappingBookings(
+    roomType,
+    checkIn,
+    checkOut,
+    excludeBookingId
+  );
+
+  const roomConfig = await roomsService.getRoomByType(roomType);
+  if (!roomConfig) return false;
+
+  return overlapCount < roomConfig.count;
 }
 
 async function createBooking(payload) {

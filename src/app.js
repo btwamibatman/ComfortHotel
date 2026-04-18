@@ -1,6 +1,6 @@
 const express = require('express');
 const config = require('./config/env');
-const { publicDir } = require('./config/paths');
+const { publicDir, viewsDir } = require('./config/paths');
 const createSessionMiddleware = require('./config/session');
 const requestLogger = require('./middlewares/requestLogger');
 const { apiNotFound, notFound, errorHandler } = require('./middlewares/errorHandlers');

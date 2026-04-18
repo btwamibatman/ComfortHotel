@@ -1,6 +1,18 @@
+const roomsService = require('../services/roomsService');
+
 function sendView(pageName, locals = {}) {
-  return (req, res) => {
-    res.render(pageName, locals);
+  return async (req, res, next) => {
+    try {
+      const viewLocals = { ...locals };
+      if (pageName === 'rooms' || pageName === 'booking') {
+        const rooms = await roomsService.listRooms();
+        viewLocals.rooms = rooms || [];
+      }
+      res.render(pageName, viewLocals);
+    } catch (error) {
+      console.error(`Failed to render ${pageName}:`, error);
+      next(error);
+    }
   };
 }
 
