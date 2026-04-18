@@ -1,6 +1,7 @@
 ﻿const bookingsRepository = require('../repositories/bookingsRepository');
 const { isValidEmail, isValidPhone, validateBookingDates } = require('../utils/validators');
 const { buildListQuery } = require('../utils/query');
+const ROOMS = require('../config/rooms');
 
 const VALID_STATUSES = ['pending', 'confirmed', 'checked-in', 'completed', 'cancelled'];
 
@@ -26,7 +27,6 @@ async function getBookingById(id) {
 
 function validateBookingInput(payload, { allowStatus = false } = {}) {
   const {
-    roomName,
     roomType,
     guestName,
     guestEmail,
@@ -34,12 +34,15 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
     checkInDate,
     checkOutDate,
     numberOfGuests,
-    totalPrice,
     status,
   } = payload;
 
-  if (!roomName || !roomType || !guestName || !guestEmail || !checkInDate || !checkOutDate || !numberOfGuests || !totalPrice) {
+  if (!roomType || !guestName || !guestEmail || !checkInDate || !checkOutDate || !numberOfGuests) {
     return { error: 'Missing required fields' };
+  }
+
+  if (!ROOMS[roomType]) {
+    return { error: 'Invalid room type' };
   }
 
   if (!isValidEmail(guestEmail)) {
@@ -56,14 +59,9 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
   }
 
   const guests = parseInt(numberOfGuests, 10);
-  const price = parseFloat(totalPrice);
 
   if (Number.isNaN(guests) || guests < 1 || guests > 10) {
     return { error: 'Number of guests must be between 1 and 10' };
-  }
-
-  if (Number.isNaN(price) || price < 0) {
-    return { error: 'Invalid price' };
   }
 
   if (allowStatus && status && !VALID_STATUSES.includes(status)) {
@@ -73,23 +71,31 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
   const checkIn = new Date(checkInDate);
   const checkOut = new Date(checkOutDate);
   const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+  
+  const roomConfig = ROOMS[roomType];
+  const calculatedPrice = roomConfig.price * duration * guests;
 
   return {
     data: {
-      roomName: roomName.trim(),
+      roomName: roomConfig.name,
       roomType: roomType.trim(),
       guestName: guestName.trim(),
       guestEmail: guestEmail.trim().toLowerCase(),
       guestPhone: guestPhone ? guestPhone.trim() : '',
-      checkInDate: new Date(checkInDate),
-      checkOutDate: new Date(checkOutDate),
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
       duration,
       numberOfGuests: guests,
-      totalPrice: price,
+      totalPrice: calculatedPrice,
       specialRequests: payload.specialRequests ? payload.specialRequests.trim() : '',
       ...(allowStatus && status ? { status } : {}),
     },
   };
+}
+
+async function checkAvailability(roomType, checkInDate, checkOutDate, excludeId = null) {
+  const overlapCount = await bookingsRepository.countOverlappingBookings(roomType, checkInDate, checkOutDate, excludeId);
+  return overlapCount < ROOMS[roomType].count;
 }
 
 async function createBooking(payload) {
@@ -108,6 +114,7 @@ module.exports = {
   listBookings,
   getBookingById,
   validateBookingInput,
+  checkAvailability,
   createBooking,
   updateBooking,
   deleteBooking,

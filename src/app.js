@@ -30,6 +30,8 @@ if (config.isProduction) {
   app.set('trust proxy', 1);
 }
 
+app.set('view engine', 'ejs');
+app.set('views', viewsDir);
 app.use(express.static(publicDir));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());

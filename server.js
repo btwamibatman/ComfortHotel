@@ -1,6 +1,7 @@
 ﻿const app = require('./src/app');
 const config = require('./src/config/env');
+const logger = require('./src/utils/logger');
 
 app.listen(config.port, () => {
-  console.log(`Server started on http://localhost:${config.port}`);
+  logger.info(`Server started on http://localhost:${config.port}`);
 });

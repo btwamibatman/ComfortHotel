@@ -1,0 +1,25 @@
+﻿<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="/">Comfort Hotel</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link <%= activePage === 'index' ? 'active' : '' %>" href="/">Home</a></li>
+        <li class="nav-item"><a class="nav-link <%= activePage === 'rooms' ? 'active' : '' %>" href="/rooms">Rooms</a></li>
+        <li class="nav-item"><a class="nav-link <%= activePage === 'booking' ? 'active' : '' %>" href="/booking">Booking</a></li>
+        <li class="nav-item"><a class="nav-link <%= activePage === 'about' ? 'active' : '' %>" href="/about">About Us</a></li>
+        <li class="nav-item"><a class="nav-link <%= activePage === 'contact' ? 'active' : '' %>" href="/contact">Contact</a></li>
+        <li class="nav-item"><a class="nav-link <%= activePage === 'login' ? 'active' : '' %>" href="/staff/login">Login</a></li>
+      </ul>
+
+      <select id="currencySelector" class="form-select form-select-sm ms-3" style="width: auto;">
+        <option value="USD">USD ($)</option>
+        <option value="EUR">EUR (в‚¬)</option>
+        <option value="KZT">KZT (в‚ё)</option>
+        <option value="RUB">RUB (в‚Ѕ)</option>
+      </select>
+    </div>
+  </div>
+</nav>

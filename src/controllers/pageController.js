@@ -1,13 +1,12 @@
-﻿const path = require('path');
-const { viewsDir } = require('../config/paths');
-
-function sendView(pageName) {
+﻿function sendView(pageName, locals = {}) {
   return (req, res) => {
-    res.sendFile(path.join(viewsDir, pageName));
+    res.render(pageName, locals);
   };
 }
 
 function sendRoomImage(req, res) {
+  const path = require('path');
+  const { viewsDir } = require('../config/paths');
   const imagePath = path.join(viewsDir, `${req.params.id}.jpg`);
   res.sendFile(imagePath, (err) => {
     if (err) {
