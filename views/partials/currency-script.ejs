@@ -1,0 +1,20 @@
+<script>
+function loadCurrency() {
+  const saved = localStorage.getItem('selectedCurrency');
+  if (saved) {
+    $('#currencySelector').val(saved);
+  }
+}
+
+function saveCurrency(currency) {
+  localStorage.setItem('selectedCurrency', currency);
+}
+
+$(document).ready(function() {
+  loadCurrency();
+
+  $('#currencySelector').change(function() {
+    saveCurrency($(this).val());
+  });
+});
+</script>

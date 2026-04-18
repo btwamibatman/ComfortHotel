@@ -1,4 +1,5 @@
 const authService = require('../services/authService');
+const logger = require('../utils/logger');
 
 function validateCredentials(req, res) {
   const { username, password } = req.body;
@@ -13,7 +14,7 @@ function persistSession(req, res, user, message) {
   req.session.user = user;
   req.session.save((err) => {
     if (err) {
-      console.error('Session save error:', err);
+      logger.error('Session save error:', err);
       return res.status(500).json({ error: 'Session error' });
     }
 
@@ -47,7 +48,7 @@ async function adminLogin(req, res) {
 
     return persistSession(req, res, result.data, 'Admin login successful');
   } catch (error) {
-    console.error('Admin login error:', error);
+    logger.error('Admin login error:', error);
     return res.status(500).json({ error: 'Server error' });
   }
 }
@@ -70,7 +71,7 @@ async function userLogin(req, res) {
 
     return persistSession(req, res, result.data, 'User login successful');
   } catch (error) {
-    console.error('User login error:', error);
+    logger.error('User login error:', error);
     return res.status(500).json({ error: 'Server error' });
   }
 }
@@ -78,7 +79,7 @@ async function userLogin(req, res) {
 function logout(req, res) {
   req.session.destroy((err) => {
     if (err) {
-      console.error('Logout error:', err);
+      logger.error('Logout error:', err);
       return res.status(500).json({ error: 'Logout failed' });
     }
 

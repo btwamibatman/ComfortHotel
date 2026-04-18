@@ -1,12 +1,13 @@
 const bookingsService = require('../services/bookingsService');
 const { isValidObjectId } = require('../utils/validators');
+const logger = require('../utils/logger');
 
 async function listBookings(req, res) {
   try {
     const bookings = await bookingsService.listBookings(req.query);
     return res.status(200).json(bookings);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -24,7 +25,7 @@ async function getBookingById(req, res) {
 
     return res.status(200).json(booking);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -36,6 +37,15 @@ async function createBooking(req, res) {
   }
 
   try {
+    const isAvailable = await bookingsService.checkAvailability(
+      validation.data.roomType,
+      validation.data.checkInDate,
+      validation.data.checkOutDate
+    );
+    if (!isAvailable) {
+      return res.status(400).json({ error: 'Room is not available for the selected dates' });
+    }
+
     const result = await bookingsService.createBooking({
       ...validation.data,
       status: 'pending',
@@ -48,7 +58,7 @@ async function createBooking(req, res) {
       id: result.insertedId,
     });
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -60,6 +70,15 @@ async function createPublicBooking(req, res) {
   }
 
   try {
+    const isAvailable = await bookingsService.checkAvailability(
+      validation.data.roomType,
+      validation.data.checkInDate,
+      validation.data.checkOutDate
+    );
+    if (!isAvailable) {
+      return res.status(400).json({ error: 'Room is not available for the selected dates' });
+    }
+
     const result = await bookingsService.createBooking({
       ...validation.data,
       status: 'pending',
@@ -72,7 +91,7 @@ async function createPublicBooking(req, res) {
       id: result.insertedId,
     });
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -88,6 +107,16 @@ async function updateBooking(req, res) {
   }
 
   try {
+    const isAvailable = await bookingsService.checkAvailability(
+      validation.data.roomType,
+      validation.data.checkInDate,
+      validation.data.checkOutDate,
+      req.params.id
+    );
+    if (!isAvailable) {
+      return res.status(400).json({ error: 'Room is not available for the selected dates' });
+    }
+
     const result = await bookingsService.updateBooking(req.params.id, {
       ...validation.data,
       updated_at: new Date(),
@@ -101,7 +130,7 @@ async function updateBooking(req, res) {
     const updatedBooking = await bookingsService.getBookingById(req.params.id);
     return res.status(200).json(updatedBooking);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -119,7 +148,7 @@ async function deleteBooking(req, res) {
 
     return res.status(200).json({ message: 'Booking deleted successfully' });
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }

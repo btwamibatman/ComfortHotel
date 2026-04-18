@@ -1,0 +1,90 @@
+<%- include('partials/head', { title: 'Comfort Hotel - Home' }) %>
+<%- include('partials/navbar', { activePage: 'index' }) %>
+
+<main class="container py-5">
+
+  <div class="row mb-5">
+  <div class="col-md-8 mx-auto">
+    <div class="welcome-section text-center">
+      <h2 class="display-4 mb-4">Welcome to Comfort Hotel</h2>
+      <p class="lead">Relax and enjoy your stay. Book a room today and experience comfort like never before.</p>
+      <a href="/rooms" class="btn btn-danger btn-lg mt-3">See our rooms →</a>
+    </div>
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-8 mx-auto">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Quick Actions</h5>
+        <div class="d-grid gap-2">
+          <a href="/booking" class="btn btn-danger">Book a Room</a>
+          <a href="/rooms" class="btn btn-outline-danger">View Rooms</a>
+          <a href="/contact" class="btn btn-outline-danger">Contact Us</a>
+          <a href="/staff/login" class="btn btn-outline-secondary">Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <div class="features mt-5">
+    <h3 class="text-center mb-4">Why Choose Us</h3>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-box text-center p-4">
+          <h4>Luxury Comfort</h4>
+          <p>Experience premium comfort in all our rooms with modern amenities</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-box text-center p-4">
+          <h4>Great Location</h4>
+          <p>Located in the heart of the city with easy access to attractions</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-box text-center p-4">
+          <h4>Best Service</h4>
+          <p>24/7 customer service ready to assist you anytime</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-5 text-center">
+    <button id="showOffer" class="btn btn-warning btn-lg">View Special Offer</button>
+    <div id="specialOffer" class="alert alert-success mt-3" style="display: none;">
+      <h4>Limited Time Offer!</h4>
+      <p>Book 3 nights and get 1 night free! Valid until end of month.</p>
+    </div>
+  </div>
+
+</main>
+
+<%- include('partials/footer') %>
+
+<script>
+$(document).ready(function() {
+  loadCurrency();
+
+  $('.feature-box').hide().fadeIn(1000);
+  
+  $('#showOffer').click(function() {
+    $('#specialOffer').slideToggle(500);
+    $(this).text(function(i, text) {
+      return text === "View Special Offer" ? "Hide Special Offer" : "View Special Offer";
+    });
+  });
+
+  $('.feature-box').hover(
+    function() { $(this).animate({ padding: '30px' }, 200); },
+    function() { $(this).animate({ padding: '24px' }, 200); }
+  );
+})
+</script>
+
+<%- include('partials/currency-script') %>
+</body>
+</html>

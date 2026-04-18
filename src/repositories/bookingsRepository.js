@@ -30,10 +30,29 @@ async function deleteBooking(id) {
   return db.collection('bookings').deleteOne({ _id: new ObjectId(id) });
 }
 
+async function countOverlappingBookings(roomType, checkIn, checkOut, excludeId = null) {
+  const db = await connectDB();
+  const filter = {
+    roomType: roomType,
+    status: { $ne: 'cancelled' },
+    $and: [
+      { checkInDate: { $lt: checkOut } },
+      { checkOutDate: { $gt: checkIn } }
+    ]
+  };
+  
+  if (excludeId) {
+    filter._id = { $ne: new ObjectId(excludeId) };
+  }
+
+  return db.collection('bookings').countDocuments(filter);
+}
+
 module.exports = {
   listBookings,
   getBookingById,
   createBooking,
   updateBooking,
   deleteBooking,
+  countOverlappingBookings,
 };
