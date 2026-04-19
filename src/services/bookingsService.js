@@ -119,6 +119,51 @@ async function updateBooking(id, payload) {
   return bookingsRepository.updateBooking(id, payload);
 }
 
+function validateStatusTransition(currentStatus, newStatus) {
+  if (!VALID_STATUSES.includes(newStatus)) {
+    return { valid: false, error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` };
+  }
+
+  // Define allowed transitions
+  const allowedTransitions = {
+    'pending': ['confirmed', 'cancelled'],
+    'confirmed': ['checked-in', 'cancelled'],
+    'checked-in': ['completed', 'cancelled'],
+    'completed': [],  // Final state
+    'cancelled': [],  // Final state
+  };
+
+  const allowed = allowedTransitions[currentStatus] || [];
+  if (!allowed.includes(newStatus)) {
+    return {
+      valid: false,
+      error: `Cannot change status from '${currentStatus}' to '${newStatus}'. Allowed: ${allowed.join(', ') || 'none (final state)'}`,
+    };
+  }
+
+  return { valid: true };
+}
+
+async function updateBookingStatus(id, newStatus, updatedBy) {
+  const booking = await bookingsRepository.getBookingById(id);
+  if (!booking) {
+    return { error: 'Booking not found', statusCode: 404 };
+  }
+
+  const transition = validateStatusTransition(booking.status, newStatus);
+  if (!transition.valid) {
+    return { error: transition.error, statusCode: 400 };
+  }
+
+  await bookingsRepository.updateBooking(id, {
+    status: newStatus,
+    updated_at: new Date(),
+    updated_by: updatedBy,
+  });
+
+  return { success: true, booking: await bookingsRepository.getBookingById(id) };
+}
+
 async function deleteBooking(id) {
   return bookingsRepository.deleteBooking(id);
 }
@@ -130,5 +175,6 @@ module.exports = {
   checkAvailability,
   createBooking,
   updateBooking,
+  updateBookingStatus,
   deleteBooking,
 };

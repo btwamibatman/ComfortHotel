@@ -153,11 +153,40 @@ async function deleteBooking(req, res) {
   }
 }
 
+async function updateBookingStatus(req, res) {
+  if (!isValidObjectId(req.params.id)) {
+    return res.status(400).json({ error: 'Invalid ID format' });
+  }
+
+  const { status } = req.body;
+  if (!status) {
+    return res.status(400).json({ error: 'Status is required' });
+  }
+
+  try {
+    const result = await bookingsService.updateBookingStatus(
+      req.params.id,
+      status,
+      req.session.user.username
+    );
+
+    if (result.error) {
+      return res.status(result.statusCode).json({ error: result.error });
+    }
+
+    return res.status(200).json(result.booking);
+  } catch (error) {
+    logger.error('Database error:', error);
+    return res.status(500).json({ error: 'Database error' });
+  }
+}
+
 module.exports = {
   listBookings,
   getBookingById,
   createBooking,
   createPublicBooking,
   updateBooking,
+  updateBookingStatus,
   deleteBooking,
 };

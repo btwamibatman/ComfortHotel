@@ -414,6 +414,24 @@
   </div>
 </div>
 
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-info-circle"></i> Booking Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="viewDetailsBody">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   let allBookings = [];
@@ -532,6 +550,28 @@
       const checkOut = new Date(booking.checkOutDate).toLocaleDateString();
       const statusClass = `status-${booking.status}`;
       const shortId = booking._id.substring(booking._id.length - 6);
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      const isManager = currentUser && currentUser.role === 'manager';
+      
+      // Build status change buttons for manager
+      let statusButtons = '';
+      if (isManager || isAdmin) {
+        const transitions = getAllowedTransitions(booking.status);
+        if (transitions.length > 0) {
+          const transitionBtns = transitions.map(t => 
+            `<button class="dropdown-item" onclick="changeStatus('${booking._id}', '${t.value}')">
+              <i class="fas ${t.icon} me-2"></i>${t.label}
+            </button>`
+          ).join('');
+          statusButtons = `
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" title="Change Status">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+              <ul class="dropdown-menu">${transitionBtns}</ul>
+            </div>`;
+        }
+      }
       
       return `
         <tr>
@@ -548,7 +588,8 @@
             <button class="btn btn-sm btn-info" onclick="viewBooking('${booking._id}')" title="View">
               <i class="fas fa-eye"></i>
             </button>
-            ${currentUser && currentUser.role === 'admin' ? `
+            ${statusButtons}
+            ${isAdmin ? `
             <button class="btn btn-sm btn-warning" onclick="editBooking('${booking._id}')" title="Edit">
               <i class="fas fa-edit"></i>
             </button>
@@ -601,27 +642,43 @@
     modal.show();
   }
   
-  // View booking details
+  // View booking details вЂ” proper modal
   function viewBooking(id) {
     const booking = allBookings.find(b => b._id === id);
     if (!booking) return;
     
-    const details = `
-      <strong>Guest Name:</strong> ${booking.guestName}<br>
-      <strong>Email:</strong> ${booking.guestEmail}<br>
-      <strong>Phone:</strong> ${booking.guestPhone || 'N/A'}<br>
-      <strong>Room:</strong> ${booking.roomName} (${booking.roomType})<br>
-      <strong>Check-In:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}<br>
-      <strong>Check-Out:</strong> ${new Date(booking.checkOutDate).toLocaleDateString()}<br>
-      <strong>Duration:</strong> ${booking.duration} nights<br>
-      <strong>Guests:</strong> ${booking.numberOfGuests}<br>
-      <strong>Total Price:</strong> $${booking.totalPrice.toFixed(2)}<br>
-      <strong>Status:</strong> ${booking.status}<br>
-      <strong>Special Requests:</strong> ${booking.specialRequests || 'None'}<br>
-      <strong>Created:</strong> ${new Date(booking.created_at).toLocaleString()}
+    const statusClass = `status-${booking.status}`;
+    document.getElementById('viewDetailsBody').innerHTML = `
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="text-muted mb-3">Guest Information</h6>
+          <p><strong>Name:</strong> ${booking.guestName}</p>
+          <p><strong>Email:</strong> ${booking.guestEmail}</p>
+          <p><strong>Phone:</strong> ${booking.guestPhone || 'N/A'}</p>
+          <p><strong>Guests:</strong> ${booking.numberOfGuests}</p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-muted mb-3">Booking Details</h6>
+          <p><strong>Room:</strong> ${booking.roomName} (${booking.roomType})</p>
+          <p><strong>Check-In:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}</p>
+          <p><strong>Check-Out:</strong> ${new Date(booking.checkOutDate).toLocaleDateString()}</p>
+          <p><strong>Duration:</strong> ${booking.duration} night(s)</p>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Total Price:</strong> $${booking.totalPrice.toFixed(2)}</p>
+          <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${booking.status}</span></p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Special Requests:</strong> ${booking.specialRequests || 'None'}</p>
+          <p><strong>Created:</strong> ${new Date(booking.created_at).toLocaleString()}</p>
+          ${booking.updated_at ? `<p><strong>Last Updated:</strong> ${new Date(booking.updated_at).toLocaleString()}</p>` : ''}
+        </div>
+      </div>
     `;
-    
-    alert('Booking Details:\n\n' + details.replace(/<br>/g, '\n').replace(/<strong>/g, '').replace(/<\/strong>/g, ''));
+    new bootstrap.Modal(document.getElementById('viewDetailsModal')).show();
   }
   
   // Edit booking
@@ -864,6 +921,63 @@
     }
   }
   
+  // --- Status transition helpers ---
+  function getAllowedTransitions(currentStatus) {
+    const transitions = {
+      'pending': [
+        { value: 'confirmed', label: 'Confirm', icon: 'fa-check-circle' },
+        { value: 'cancelled', label: 'Cancel', icon: 'fa-times-circle' },
+      ],
+      'confirmed': [
+        { value: 'checked-in', label: 'Check In', icon: 'fa-sign-in-alt' },
+        { value: 'cancelled', label: 'Cancel', icon: 'fa-times-circle' },
+      ],
+      'checked-in': [
+        { value: 'completed', label: 'Check Out', icon: 'fa-sign-out-alt' },
+        { value: 'cancelled', label: 'Cancel', icon: 'fa-times-circle' },
+      ],
+      'completed': [],
+      'cancelled': [],
+    };
+    return transitions[currentStatus] || [];
+  }
+
+  async function changeStatus(bookingId, newStatus) {
+    const booking = allBookings.find(b => b._id === bookingId);
+    if (!booking) return;
+    
+    const statusLabels = {
+      'confirmed': 'Confirm',
+      'checked-in': 'Check In',
+      'completed': 'Check Out (Complete)',
+      'cancelled': 'Cancel',
+    };
+    
+    const action = statusLabels[newStatus] || newStatus;
+    if (!confirm(`${action} booking for ${booking.guestName}?`)) return;
+    
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        await loadBookings();
+        alert(`Status changed to '${newStatus}' successfully!`);
+      } else {
+        alert('Error: ' + (result.error || 'Failed to change status'));
+      }
+    } catch (error) {
+      console.error('Status change error:', error);
+      alert('Network error. Please try again.');
+    }
+  }
+
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', async function() {
     const isAuth = await checkAuth();
