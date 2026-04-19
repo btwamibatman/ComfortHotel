@@ -1,38 +1,5 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Comfort Hotel - Home</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container">
-    <a class="navbar-brand" href="/">Comfort Hotel</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link active" href="/">Home</a></li>
-        <li class="nav-item"><a class="nav-link" href="/rooms">Rooms</a></li>
-        <li class="nav-item"><a class="nav-link" href="/booking">Booking</a></li>
-        <li class="nav-item"><a class="nav-link" href="/about">About Us</a></li>
-        <li class="nav-item"><a class="nav-link" href="/contact">Contact</a></li>
-        <li class="nav-item"><a class="nav-link" href="/staff/login">Login</a></li>
-      </ul>
-
-      <select id="currencySelector" class="form-select form-select-sm ms-3" style="width: auto;">
-        <option value="USD">USD ($)</option>
-        <option value="EUR">EUR (€)</option>
-        <option value="KZT">KZT (₸)</option>
-        <option value="RUB">RUB (₽)</option>
-      </select>
-    </div>
-  </div>
-</nav>
+<%- include('partials/head', { title: 'Comfort Hotel - Home' }) %>
+<%- include('partials/navbar', { activePage: 'index' }) %>
 
 <main class="container py-5">
 
@@ -61,8 +28,6 @@
     </div>
   </div>
 </div>
-
-
 
   <div class="features mt-5">
     <h3 class="text-center mb-4">Why Choose Us</h3>
@@ -98,23 +63,9 @@
 
 </main>
 
-<footer class="bg-dark text-white text-center py-3 mt-5">
-  <p>©2026 Comfort Hotel | All Rights Reserved</p>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<%- include('partials/footer') %>
 
 <script>
-let exchangeRates = {};
-const basePrices = { single: 50, double: 90, suite: 150 };
-
-function loadCurrency() {
-  const saved = localStorage.getItem('selectedCurrency');
-  if (saved) {
-    $('#currencySelector').val(saved);
-  }
-}
-
 $(document).ready(function() {
   loadCurrency();
 
@@ -131,13 +82,9 @@ $(document).ready(function() {
     function() { $(this).animate({ padding: '30px' }, 200); },
     function() { $(this).animate({ padding: '24px' }, 200); }
   );
-
-  $('#currencySelector').change(function() {
-    const currency = $(this).val();
-    localStorage.setItem('selectedCurrency', currency);
-  });
 })
 </script>
 
+<%- include('partials/currency-script') %>
 </body>
 </html>

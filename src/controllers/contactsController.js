@@ -1,12 +1,13 @@
 const contactsService = require('../services/contactsService');
 const { isValidObjectId } = require('../utils/validators');
+const logger = require('../utils/logger');
 
 async function listContacts(req, res) {
   try {
     const contacts = await contactsService.listContacts(req.query);
     return res.status(200).json(contacts);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -24,7 +25,7 @@ async function getContactById(req, res) {
 
     return res.status(200).json(contact);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -50,7 +51,7 @@ async function createContact(req, res) {
       id: result.insertedId,
     });
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -82,7 +83,7 @@ async function updateContact(req, res) {
     const updatedContact = await contactsService.getContactById(req.params.id);
     return res.status(200).json(updatedContact);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -100,7 +101,7 @@ async function deleteContact(req, res) {
 
     return res.status(200).json({ message: 'Contact deleted successfully' });
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).json({ error: 'Database error' });
   }
 }
@@ -128,7 +129,7 @@ async function submitPublicContact(req, res) {
 
     return res.send(`<h2>Thanks, ${name}! Your message has been saved.</h2><a href="/">Back</a>`);
   } catch (error) {
-    console.error('Database error:', error);
+    logger.error('Database error:', error);
     return res.status(500).send('Error saving data');
   }
 }

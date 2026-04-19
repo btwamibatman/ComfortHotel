@@ -1,5 +1,14 @@
+const logger = require('../utils/logger');
+
 function requestLogger(req, res, next) {
-  console.log(`${req.method} ${req.url} - User: ${req.session?.user?.username || 'guest'}`);
+  const start = Date.now();
+
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const user = req.session?.user?.username || 'guest';
+    logger.info(`${req.method} ${req.originalUrl} ${res.statusCode} - ${duration}ms - User: ${user}`);
+  });
+
   next();
 }
 

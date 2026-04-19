@@ -1,6 +1,7 @@
 const bookingsRepository = require('../repositories/bookingsRepository');
 const { isValidEmail, isValidPhone, validateBookingDates } = require('../utils/validators');
 const { buildListQuery } = require('../utils/query');
+const roomsService = require('./roomsService');
 
 const VALID_STATUSES = ['pending', 'confirmed', 'checked-in', 'completed', 'cancelled'];
 
@@ -24,7 +25,7 @@ async function getBookingById(id) {
   return bookingsRepository.getBookingById(id);
 }
 
-function validateBookingInput(payload, { allowStatus = false } = {}) {
+async function validateBookingInput(payload, { allowStatus = false } = {}) {
   const {
     roomName,
     roomType,
@@ -34,12 +35,16 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
     checkInDate,
     checkOutDate,
     numberOfGuests,
-    totalPrice,
     status,
   } = payload;
 
-  if (!roomName || !roomType || !guestName || !guestEmail || !checkInDate || !checkOutDate || !numberOfGuests || !totalPrice) {
+  if (!roomType || !guestName || !guestEmail || !checkInDate || !checkOutDate || !numberOfGuests) {
     return { error: 'Missing required fields' };
+  }
+
+  const roomConfig = await roomsService.getRoomByType(roomType);
+  if (!roomConfig) {
+    return { error: 'Invalid room type' };
   }
 
   if (!isValidEmail(guestEmail)) {
@@ -56,14 +61,9 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
   }
 
   const guests = parseInt(numberOfGuests, 10);
-  const price = parseFloat(totalPrice);
 
   if (Number.isNaN(guests) || guests < 1 || guests > 10) {
     return { error: 'Number of guests must be between 1 and 10' };
-  }
-
-  if (Number.isNaN(price) || price < 0) {
-    return { error: 'Invalid price' };
   }
 
   if (allowStatus && status && !VALID_STATUSES.includes(status)) {
@@ -73,23 +73,42 @@ function validateBookingInput(payload, { allowStatus = false } = {}) {
   const checkIn = new Date(checkInDate);
   const checkOut = new Date(checkOutDate);
   const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+  
+  const calculatedPrice = roomConfig.price * duration * guests;
 
   return {
     data: {
-      roomName: roomName.trim(),
+      roomName: roomConfig.name,
       roomType: roomType.trim(),
       guestName: guestName.trim(),
       guestEmail: guestEmail.trim().toLowerCase(),
       guestPhone: guestPhone ? guestPhone.trim() : '',
-      checkInDate: new Date(checkInDate),
-      checkOutDate: new Date(checkOutDate),
+      checkInDate: checkIn,
+      checkOutDate: checkOut,
       duration,
       numberOfGuests: guests,
-      totalPrice: price,
+      totalPrice: calculatedPrice,
       specialRequests: payload.specialRequests ? payload.specialRequests.trim() : '',
       ...(allowStatus && status ? { status } : {}),
     },
   };
+}
+
+async function checkAvailability(roomType, checkInDate, checkOutDate, excludeBookingId = null) {
+  const checkIn = new Date(checkInDate);
+  const checkOut = new Date(checkOutDate);
+
+  const overlapCount = await bookingsRepository.countOverlappingBookings(
+    roomType,
+    checkIn,
+    checkOut,
+    excludeBookingId
+  );
+
+  const roomConfig = await roomsService.getRoomByType(roomType);
+  if (!roomConfig) return false;
+
+  return overlapCount < roomConfig.count;
 }
 
 async function createBooking(payload) {
@@ -100,6 +119,51 @@ async function updateBooking(id, payload) {
   return bookingsRepository.updateBooking(id, payload);
 }
 
+function validateStatusTransition(currentStatus, newStatus) {
+  if (!VALID_STATUSES.includes(newStatus)) {
+    return { valid: false, error: `Invalid status. Must be one of: ${VALID_STATUSES.join(', ')}` };
+  }
+
+  // Define allowed transitions
+  const allowedTransitions = {
+    'pending': ['confirmed', 'cancelled'],
+    'confirmed': ['checked-in', 'cancelled'],
+    'checked-in': ['completed', 'cancelled'],
+    'completed': [],  // Final state
+    'cancelled': [],  // Final state
+  };
+
+  const allowed = allowedTransitions[currentStatus] || [];
+  if (!allowed.includes(newStatus)) {
+    return {
+      valid: false,
+      error: `Cannot change status from '${currentStatus}' to '${newStatus}'. Allowed: ${allowed.join(', ') || 'none (final state)'}`,
+    };
+  }
+
+  return { valid: true };
+}
+
+async function updateBookingStatus(id, newStatus, updatedBy) {
+  const booking = await bookingsRepository.getBookingById(id);
+  if (!booking) {
+    return { error: 'Booking not found', statusCode: 404 };
+  }
+
+  const transition = validateStatusTransition(booking.status, newStatus);
+  if (!transition.valid) {
+    return { error: transition.error, statusCode: 400 };
+  }
+
+  await bookingsRepository.updateBooking(id, {
+    status: newStatus,
+    updated_at: new Date(),
+    updated_by: updatedBy,
+  });
+
+  return { success: true, booking: await bookingsRepository.getBookingById(id) };
+}
+
 async function deleteBooking(id) {
   return bookingsRepository.deleteBooking(id);
 }
@@ -108,7 +172,9 @@ module.exports = {
   listBookings,
   getBookingById,
   validateBookingInput,
+  checkAvailability,
   createBooking,
   updateBooking,
+  updateBookingStatus,
   deleteBooking,
 };
