@@ -1,16 +1,15 @@
-﻿const path = require('path');
-const { viewsDir } = require('../config/paths');
+﻿const logger = require('../utils/logger');
 
 function apiNotFound(req, res) {
   res.status(404).json({ error: 'API endpoint not found' });
 }
 
 function notFound(req, res) {
-  res.status(404).sendFile(path.join(viewsDir, '404.html'));
+  res.status(404).render('404', { activePage: '' });
 }
 
 function errorHandler(err, req, res, next) {
-  console.error('Unhandled error:', err);
+  logger.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal server error' });
 }
 

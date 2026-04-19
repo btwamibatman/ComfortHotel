@@ -8,6 +8,7 @@ router.post('/public', bookingsController.createPublicBooking);
 router.get('/', isInternalStaff, bookingsController.listBookings);
 router.get('/:id', isInternalStaff, bookingsController.getBookingById);
 router.post('/', isInternalStaff, bookingsController.createBooking);
+router.patch('/:id/status', isInternalStaff, bookingsController.updateBookingStatus);
 router.put('/:id', isAdmin, bookingsController.updateBooking);
 router.delete('/:id', isAdmin, bookingsController.deleteBooking);
 

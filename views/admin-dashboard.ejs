@@ -1,12 +1,5 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Operations Dashboard - Comfort Hoetel</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+﻿<%- include('partials/head', { title: 'Operations Dashboard - Comfort Hotel' }) %>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link rel="stylesheet" href="/style.css">
   <style>
     body {
       background: #f8f9fa;
@@ -156,7 +149,20 @@
     </div>
   </div>
 
-  <!-- Bookings Table -->
+  <!-- Tabs -->
+  <ul class="nav nav-tabs mb-4" id="dashboardTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="bookings-tab" data-bs-toggle="tab" data-bs-target="#bookings-panel" type="button" role="tab">Bookings</button>
+    </li>
+    <li class="nav-item" role="presentation" id="roomsTabItem" style="display: none;">
+      <button class="nav-link" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms-panel" type="button" role="tab">Rooms Management</button>
+    </li>
+  </ul>
+
+  <div class="tab-content" id="dashboardTabsContent">
+    <!-- Bookings Panel -->
+    <div class="tab-pane fade show active" id="bookings-panel" role="tabpanel">
+      <!-- Bookings Table -->
   <div class="card shadow">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
       <h5 class="mb-0"><i class="fas fa-list"></i> All Bookings</h5>
@@ -220,7 +226,44 @@
   </div>
 </div>
 
-<!-- Create/Edit Modal -->
+  <!-- Rooms Panel -->
+  <div class="tab-pane fade" id="rooms-panel" role="tabpanel">
+    <div class="card shadow">
+      <div class="card-header bg-white d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-bed"></i> Rooms Configuration</h5>
+        <button class="btn btn-primary" onclick="openRoomModal()">
+          <i class="fas fa-plus"></i> Add New Room
+        </button>
+      </div>
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover mb-0" id="roomsTable">
+            <thead>
+              <tr>
+                <th>Type Code</th>
+                <th>Display Name</th>
+                <th>Base Price ($)</th>
+                <th>Total Count</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="roomsBody">
+              <tr>
+                <td colspan="5" class="text-center py-5">
+                  <div class="spinner-border text-primary" role="status"></div>
+                  <p class="mt-2 text-muted">Loading rooms...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Create/Edit Booking Modal -->
 <div class="modal fade" id="bookingModal" tabindex="-1">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -332,6 +375,63 @@
   </div>
 </div>
 
+<!-- Create/Edit Room Modal -->
+<div class="modal fade" id="roomModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="roomModalTitle">Add New Room</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="roomForm">
+          <input type="hidden" id="roomId">
+          <div class="mb-3">
+            <label class="form-label">Type Code (e.g., 'single', 'suite') *</label>
+            <input type="text" class="form-control" id="roomTypeCode" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Display Name *</label>
+            <input type="text" class="form-control" id="roomDisplayName" required placeholder="Single Room">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Base Price ($) *</label>
+            <input type="number" class="form-control" id="roomBasePrice" required min="0" step="0.01">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Total Count Available *</label>
+            <input type="number" class="form-control" id="roomTotalCount" required min="1">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" onclick="saveRoom()">
+          <i class="fas fa-save"></i> Save Room
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- View Details Modal -->
+<div class="modal fade" id="viewDetailsModal" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-info-circle"></i> Booking Details</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="viewDetailsBody">
+        <!-- Populated dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   let allBookings = [];
@@ -374,6 +474,11 @@
       document.getElementById('dashboardSubtitle').textContent = isAdmin
         ? 'Manage hotel bookings and operations'
         : 'Create and monitor hotel bookings';
+      
+      if (isAdmin) {
+        document.getElementById('roomsTabItem').style.display = 'block';
+        loadRooms(); // Load rooms if admin
+      }
       
       return true;
     } catch (error) {
@@ -445,6 +550,28 @@
       const checkOut = new Date(booking.checkOutDate).toLocaleDateString();
       const statusClass = `status-${booking.status}`;
       const shortId = booking._id.substring(booking._id.length - 6);
+      const isAdmin = currentUser && currentUser.role === 'admin';
+      const isManager = currentUser && currentUser.role === 'manager';
+      
+      // Build status change buttons for manager
+      let statusButtons = '';
+      if (isManager || isAdmin) {
+        const transitions = getAllowedTransitions(booking.status);
+        if (transitions.length > 0) {
+          const transitionBtns = transitions.map(t => 
+            `<button class="dropdown-item" onclick="changeStatus('${booking._id}', '${t.value}')">
+              <i class="fas ${t.icon} me-2"></i>${t.label}
+            </button>`
+          ).join('');
+          statusButtons = `
+            <div class="btn-group">
+              <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" title="Change Status">
+                <i class="fas fa-exchange-alt"></i>
+              </button>
+              <ul class="dropdown-menu">${transitionBtns}</ul>
+            </div>`;
+        }
+      }
       
       return `
         <tr>
@@ -461,7 +588,8 @@
             <button class="btn btn-sm btn-info" onclick="viewBooking('${booking._id}')" title="View">
               <i class="fas fa-eye"></i>
             </button>
-            ${currentUser && currentUser.role === 'admin' ? `
+            ${statusButtons}
+            ${isAdmin ? `
             <button class="btn btn-sm btn-warning" onclick="editBooking('${booking._id}')" title="Edit">
               <i class="fas fa-edit"></i>
             </button>
@@ -514,27 +642,43 @@
     modal.show();
   }
   
-  // View booking details
+  // View booking details вЂ” proper modal
   function viewBooking(id) {
     const booking = allBookings.find(b => b._id === id);
     if (!booking) return;
     
-    const details = `
-      <strong>Guest Name:</strong> ${booking.guestName}<br>
-      <strong>Email:</strong> ${booking.guestEmail}<br>
-      <strong>Phone:</strong> ${booking.guestPhone || 'N/A'}<br>
-      <strong>Room:</strong> ${booking.roomName} (${booking.roomType})<br>
-      <strong>Check-In:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}<br>
-      <strong>Check-Out:</strong> ${new Date(booking.checkOutDate).toLocaleDateString()}<br>
-      <strong>Duration:</strong> ${booking.duration} nights<br>
-      <strong>Guests:</strong> ${booking.numberOfGuests}<br>
-      <strong>Total Price:</strong> $${booking.totalPrice.toFixed(2)}<br>
-      <strong>Status:</strong> ${booking.status}<br>
-      <strong>Special Requests:</strong> ${booking.specialRequests || 'None'}<br>
-      <strong>Created:</strong> ${new Date(booking.created_at).toLocaleString()}
+    const statusClass = `status-${booking.status}`;
+    document.getElementById('viewDetailsBody').innerHTML = `
+      <div class="row">
+        <div class="col-md-6">
+          <h6 class="text-muted mb-3">Guest Information</h6>
+          <p><strong>Name:</strong> ${booking.guestName}</p>
+          <p><strong>Email:</strong> ${booking.guestEmail}</p>
+          <p><strong>Phone:</strong> ${booking.guestPhone || 'N/A'}</p>
+          <p><strong>Guests:</strong> ${booking.numberOfGuests}</p>
+        </div>
+        <div class="col-md-6">
+          <h6 class="text-muted mb-3">Booking Details</h6>
+          <p><strong>Room:</strong> ${booking.roomName} (${booking.roomType})</p>
+          <p><strong>Check-In:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}</p>
+          <p><strong>Check-Out:</strong> ${new Date(booking.checkOutDate).toLocaleDateString()}</p>
+          <p><strong>Duration:</strong> ${booking.duration} night(s)</p>
+        </div>
+      </div>
+      <hr>
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Total Price:</strong> $${booking.totalPrice.toFixed(2)}</p>
+          <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${booking.status}</span></p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Special Requests:</strong> ${booking.specialRequests || 'None'}</p>
+          <p><strong>Created:</strong> ${new Date(booking.created_at).toLocaleString()}</p>
+          ${booking.updated_at ? `<p><strong>Last Updated:</strong> ${new Date(booking.updated_at).toLocaleString()}</p>` : ''}
+        </div>
+      </div>
     `;
-    
-    alert('Booking Details:\n\n' + details.replace(/<br>/g, '\n').replace(/<strong>/g, '').replace(/<\/strong>/g, ''));
+    new bootstrap.Modal(document.getElementById('viewDetailsModal')).show();
   }
   
   // Edit booking
@@ -656,7 +800,184 @@
       alert('Network error. Please try again.');
     }
   }
+
+  // --- Rooms Management JS ---
+  let allRooms = [];
+
+  async function loadRooms() {
+    try {
+      const response = await fetch('/api/rooms', { credentials: 'same-origin' });
+      allRooms = await response.json();
+      displayRooms(allRooms);
+      updateRoomSelects(); // Update booking form options
+    } catch (error) {
+      console.error('Error loading rooms:', error);
+    }
+  }
+
+  function displayRooms(rooms) {
+    const tbody = document.getElementById('roomsBody');
+    if (rooms.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" class="text-center text-muted py-3">No rooms configured</td></tr>`;
+      return;
+    }
+    
+    tbody.innerHTML = rooms.map(room => `
+      <tr>
+        <td><code>${room.type}</code></td>
+        <td>${room.name}</td>
+        <td>$${room.price.toFixed(2)}</td>
+        <td>${room.count}</td>
+        <td>
+          <button class="btn btn-sm btn-warning" onclick="editRoom('${room._id}')" title="Edit">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteRoom('${room._id}')" title="Delete">
+            <i class="fas fa-trash"></i>
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function updateRoomSelects() {
+    const roomTypeSelect = document.getElementById('roomType');
+    if (roomTypeSelect) {
+      roomTypeSelect.innerHTML = '<option value="">Select Type</option>' + 
+        allRooms.map(r => `<option value="${r.type}">${r.name}</option>`).join('');
+    }
+  }
+
+  function openRoomModal() {
+    document.getElementById('roomModalTitle').textContent = 'Add New Room';
+    document.getElementById('roomForm').reset();
+    document.getElementById('roomId').value = '';
+    new bootstrap.Modal(document.getElementById('roomModal')).show();
+  }
+
+  function editRoom(id) {
+    const room = allRooms.find(r => r._id === id);
+    if (!room) return;
+    document.getElementById('roomModalTitle').textContent = 'Edit Room';
+    document.getElementById('roomId').value = room._id;
+    document.getElementById('roomTypeCode').value = room.type;
+    document.getElementById('roomDisplayName').value = room.name;
+    document.getElementById('roomBasePrice').value = room.price;
+    document.getElementById('roomTotalCount').value = room.count;
+    new bootstrap.Modal(document.getElementById('roomModal')).show();
+  }
+
+  async function saveRoom() {
+    const form = document.getElementById('roomForm');
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
+    
+    const id = document.getElementById('roomId').value;
+    const data = {
+      type: document.getElementById('roomTypeCode').value,
+      name: document.getElementById('roomDisplayName').value,
+      price: document.getElementById('roomBasePrice').value,
+      count: document.getElementById('roomTotalCount').value
+    };
+    
+    try {
+      const url = id ? `/api/rooms/${id}` : '/api/rooms';
+      const method = id ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify(data)
+      });
+      
+      const result = await response.json();
+      if (response.ok) {
+        bootstrap.Modal.getInstance(document.getElementById('roomModal')).hide();
+        await loadRooms();
+        alert(id ? 'Room updated!' : 'Room created!');
+      } else {
+        alert('Error: ' + (result.error || 'Failed to save room'));
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Network error');
+    }
+  }
+
+  async function deleteRoom(id) {
+    if (!confirm('Are you sure you want to delete this room? This may affect existing bookings.')) return;
+    try {
+      const response = await fetch(`/api/rooms/${id}`, { method: 'DELETE', credentials: 'same-origin' });
+      if (response.ok) {
+        await loadRooms();
+      } else {
+        const res = await response.json();
+        alert('Error: ' + (res.error || 'Failed to delete'));
+      }
+    } catch (e) {
+      alert('Network error');
+    }
+  }
   
+  // --- Status transition helpers ---
+  function getAllowedTransitions(currentStatus) {
+    const transitions = {
+      'pending': [
+        { value: 'confirmed', label: 'Confirm', icon: 'fa-check-circle' },
+        { value: 'cancelled', label: 'Cancel', icon: 'fa-times-circle' },
+      ],
+      'confirmed': [
+        { value: 'checked-in', label: 'Check In', icon: 'fa-sign-in-alt' },
+        { value: 'cancelled', label: 'Cancel', icon: 'fa-times-circle' },
+      ],
+      'checked-in': [
+        { value: 'completed', label: 'Check Out', icon: 'fa-sign-out-alt' },
+        { value: 'cancelled', label: 'Cancel', icon: 'fa-times-circle' },
+      ],
+      'completed': [],
+      'cancelled': [],
+    };
+    return transitions[currentStatus] || [];
+  }
+
+  async function changeStatus(bookingId, newStatus) {
+    const booking = allBookings.find(b => b._id === bookingId);
+    if (!booking) return;
+    
+    const statusLabels = {
+      'confirmed': 'Confirm',
+      'checked-in': 'Check In',
+      'completed': 'Check Out (Complete)',
+      'cancelled': 'Cancel',
+    };
+    
+    const action = statusLabels[newStatus] || newStatus;
+    if (!confirm(`${action} booking for ${booking.guestName}?`)) return;
+    
+    try {
+      const response = await fetch(`/api/bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ status: newStatus }),
+      });
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        await loadBookings();
+        alert(`Status changed to '${newStatus}' successfully!`);
+      } else {
+        alert('Error: ' + (result.error || 'Failed to change status'));
+      }
+    } catch (error) {
+      console.error('Status change error:', error);
+      alert('Network error. Please try again.');
+    }
+  }
+
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', async function() {
     const isAuth = await checkAuth();

@@ -1,6 +1,6 @@
 ﻿const express = require('express');
 const config = require('./config/env');
-const { publicDir } = require('./config/paths');
+const { publicDir, viewsDir } = require('./config/paths');
 const createSessionMiddleware = require('./config/session');
 const requestLogger = require('./middlewares/requestLogger');
 const { apiNotFound, notFound, errorHandler } = require('./middlewares/errorHandlers');
@@ -31,6 +31,8 @@ if (config.isProduction) {
   app.set('trust proxy', 1);
 }
 
+app.set('view engine', 'ejs');
+app.set('views', viewsDir);
 app.use(express.static(publicDir));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
