@@ -1,0 +1,26 @@
+groups:
+  - name: comforthotel-alerts
+    rules:
+      - alert: BackendHighErrorRateWarning
+        expr: |
+          100 * (
+            sum(rate(http_requests_total{status_code=~"5.."}[5m])) /
+            clamp_min(sum(rate(http_requests_total[5m])), 0.001)
+          ) > 5
+        for: 1m
+        labels:
+          severity: warning
+          service: backend
+        annotations:
+          summary: "Backend error rate is high"
+          description: "5xx error rate is above 5% for more than 1 minute."
+
+      - alert: BackendDownCritical
+        expr: up{job="backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+          service: backend
+        annotations:
+          summary: "Backend is down"
+          description: "Prometheus cannot scrape the backend target for at least 30 seconds."
