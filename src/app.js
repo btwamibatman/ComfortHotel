@@ -8,6 +8,7 @@ const webRoutes = require('./routes/webRoutes');
 const authRoutes = require('./routes/authRoutes');
 const apiRoutes = require('./routes/api');
 const client = require('prom-client');
+const register = client.register;
 
 const app = express();
 client.collectDefaultMetrics();
@@ -23,7 +24,7 @@ const httpRequestDuration = new client.Histogram({
   name: 'http_request_duration_seconds',
   help: 'HTTP request duration in seconds',
   labelNames: ['method', 'route', 'status_code'],
-  buckets: [0.05, 0.1, 0.2, 0.5, 1, 2, 5],
+  buckets: [0.05, 0.1, 0.2, 0.3, 0.5, 1, 2],
 });
 
 if (config.isProduction) {
@@ -59,8 +60,8 @@ app.use('/api', apiRoutes);
 app.use(webRoutes);
 
 app.get('/metrics', async (_req, res) => {
-  res.set('Content-Type', client.register.contentType);
-  res.end(await client.register.metrics());
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
 });
 
 app.use('/api', apiNotFound);
