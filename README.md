@@ -1,461 +1,143 @@
-﻿# Comfort Hotel - Hotel Booking System
+﻿
+# Comfort Hotel
 
-### рџ“Њ Quick Start
+A hotel booking system built with Node.js, Express, MongoDB, and session-based authentication. 
+The project provides a public booking interface together with protected admin and staff functionality for managing hotel reservations.
+
+## Features
+
+- Session-based authentication with `express-session` and MongoDB store
+- Secure password hashing with `bcrypt`
+- Cookie protection with `HttpOnly`, `Secure`, and `SameSite`
+- Role-based authorization for protected actions
+- Full booking CRUD through a web interface
+- Validation for email, phone, dates, and guest count
+- Realistic hotel booking domain model with seeded sample data
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Runtime | Node.js |
+| Framework | Express.js |
+| Database | MongoDB |
+| Session Store | connect-mongo |
+| Authentication | express-session + bcrypt |
+| Frontend | HTML, Bootstrap, Vanilla JS |
+
+## Getting Started
+
+### 1. Install dependencies
 
 ```bash
-# 1. Install dependencies
 npm install
+```
+Start server
+npm start
 
-# 2. Initialize users with hashed passwords
+### 2. Configure environment variables
+
+Create a `.env` file in the project root:
+
+```env
+PORT=3000
+MONGO_URI=your_mongodb_connection_string
+SESSION_SECRET=your_session_secret
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your_password
+STAFF_USERNAME=staff
+STAFF_PASSWORD=your_password
+```
+
+### 3. Initialize users
+
+```bash
 node init-users.js
+```
 
-# 3. Seed database with 25+ bookings
+### 4. Seed sample bookings
+
+```bash
 node seed-bookings.js
+```
 
-# 4. Start server
+### 5. Start the server
+
+```bash
 npm start
 ```
 
-**рџљЂ Access the application:**
-- Public Site: http://localhost:3000
-- Admin Login: http://localhost:3000/admin/login
-- Staff Login: http://localhost:3000/staff/login
-- Credentials are configured in `.env`
+## Application URLs
 
----
+| Route | URL |
+|---|---|
+| Public site | `http://localhost:3000` |
+| Admin login | `http://localhost:3000/admin/login` |
+| Staff login | `http://localhost:3000/staff/login` |
 
-##  Implementations
+## Authentication and Security
 
-### рџ”ђ 1. Session-Based Authentication
--  Express-session with MongoDB store
--  Session persists between requests
--  Session ID stored in secure cookie
--  Login via Web UI
--  Sessions expire after 24 hours
+This project uses session-based authentication. User credentials are verified with `bcrypt`, sessions are stored in MongoDB, and session IDs are transmitted via secure cookies configured with `HttpOnly`, `Secure` (production only), and `SameSite=Strict`. This helps protect the application against common attacks such as XSS and CSRF.
 
-### рџ”’ 2. Password Security
--  Bcrypt hashing (salt rounds: 10)
--  NO plain-text password storage
--  Generic error messages ("Invalid credentials")
--  Passwords never sent to client
+## Booking Model
 
-### рџЌЄ 3. Cookie Security
--  **HttpOnly flag** - prevents XSS attacks
--  **Secure flag** - HTTPS in production
--  **SameSite: strict** - CSRF protection
--  NO sensitive data in cookies
+Each booking contains the following fields: room name, room type, guest name, guest email, guest phone, check-in date, check-out date, stay duration, number of guests, total price, special requests, and booking status.
 
-### рџ›ЎпёЏ 4. Authentication & Authorization
--  Middleware-based authentication (`isAuthenticated`)
--  Protected write operations (POST, PUT, DELETE)
--  Unauthorized users CANNOT modify data
--  Authorization based on user roles
+## API Overview
 
-### рџ“Љ 5. Production Web Interface
--  Full CRUD via Web UI (no Postman needed)
--  Data displayed in responsive table
--  CREATE bookings via modal form
--  UPDATE bookings with inline editing
--  DELETE with confirmation
--  Dynamic data loading from API
+**Authentication**
 
-### рџЏ·пёЏ 6. Domain Data (Bookings)
--  NOT generic "items" - specific to hotel domain
--  **12 meaningful fields** per booking:
-  1. `roomName` - Room name
-  2. `roomType` - Room category
-  3. `guestName` - Guest full name
-  4. `guestEmail` - Guest email
-  5. `guestPhone` - Contact phone
-  6. `checkInDate` - Arrival date
-  7. `checkOutDate` - Departure date
-  8. `duration` - Nights (auto-calculated)
-  9. `numberOfGuests` - Guest count
-  10. `totalPrice` - Booking cost
-  11. `specialRequests` - Special notes
-  12. `status` - Booking status
--  **25 realistic records** in database
--  Logically structured data
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/auth/admin/login` | Login as admin |
+| POST | `/auth/logout` | Logout |
+| GET | `/api/auth/status` | Check auth status |
 
-### вњ”пёЏ 7. Validation & Error Handling
--  Email format validation
--  Phone format validation
--  Date logic validation (check-out > check-in)
--  Number range validation (guests: 1-10)
--  Correct HTTP status codes (200, 201, 400, 401, 403, 404, 500)
--  Application never crashes on invalid requests
+**Bookings**
 
----
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/api/bookings` | Get all bookings |
+| GET | `/api/bookings/:id` | Get booking by ID |
+| POST | `/api/bookings` | Create booking *(protected)* |
+| PUT | `/api/bookings/:id` | Update booking *(protected)* |
+| DELETE | `/api/bookings/:id` | Delete booking *(protected)* |
 
-## рџЏ—пёЏ Architecture & Security
+## Validation
 
-### Middleware Stack
-```javascript
-1. express.static() - Serve static files
-2. express.json() - Parse JSON bodies
-3. express-session - Session management
-4. isAuthenticated() - Auth guard
-5. Route handlers
-6. Error handlers
-```
+The application validates email format, phone format, check-in and check-out date logic, and guest count range. It returns appropriate HTTP status codes: `200`, `201`, `400`, `401`, `403`, `404`, and `500`.
 
-### Session Flow
-```
-1. User submits login form
-   в†“
-2. Server validates credentials with bcrypt
-   в†“
-3. Server creates session in MongoDB
-   в†“
-4. Server sends session ID as HttpOnly cookie
-   в†“
-5. Client automatically sends cookie with requests
-   в†“
-6. Server validates session on each request
-   в†“
-7. Session destroyed on logout or expiry
-```
-
-### Cookie Configuration
-```javascript
-cookie: {
-  httpOnly: true,        // XSS protection
-  secure: NODE_ENV === 'production',  // HTTPS only
-  maxAge: 24 * 60 * 60 * 1000,  // 24 hours
-  sameSite: 'strict'     // CSRF protection
-}
-```
-
----
-
-## рџЊђ API Documentation
-
-### Authentication Endpoints
-
-#### POST `/auth/admin/login`
-Login with credentials
-```json
-Request:
-{
-  "username": "<ADMIN_USERNAME>",
-  "password": "<ADMIN_PASSWORD>"
-}
-
-Response (200):
-{
-  "success": true,
-  "message": "Login successful",
-  "user": {
-    "username": "admin",
-    "role": "admin",
-    "fullName": "Administrator"
-  }
-}
-
-Error (401):
-{
-  "error": "Invalid credentials"
-}
-```
-
-#### POST `/auth/logout`
-Destroy session
-```json
-Response (200):
-{
-  "success": true,
-  "message": "Logged out successfully"
-}
-```
-
-#### GET `/api/auth/status`
-Check authentication status
-```json
-Response (authenticated):
-{
-  "authenticated": true,
-  "user": {
-    "username": "admin",
-    "role": "admin"
-  }
-}
-
-Response (not authenticated):
-{
-  "authenticated": false
-}
-```
-
-### Bookings CRUD
-
-#### GET `/api/bookings`
-Get all bookings (no auth required)
-```
-Query parameters:
-- status: Filter by status
-- roomName: Filter by room
-- sortBy: Sort field
-- sortOrder: asc/desc
-
-Response (200): Array of bookings
-```
-
-#### GET `/api/bookings/:id`
-Get single booking
-```
-Response (200): Booking object
-Response (404): { "error": "Booking not found" }
-```
-
-#### POST `/api/bookings` рџ”’ Protected
-Create new booking
-```json
-Request:
-{
-  "roomName": "Deluxe Suite",
-  "roomType": "suite",
-  "guestName": "John Smith",
-  "guestEmail": "john@example.com",
-  "guestPhone": "+1-555-123-4567",
-  "checkInDate": "2026-03-15",
-  "checkOutDate": "2026-03-18",
-  "numberOfGuests": 2,
-  "totalPrice": 750.00,
-  "specialRequests": "Late check-in"
-}
-
-Response (201):
-{
-  "message": "Booking created successfully",
-  "id": "65f1a2b3c4d5e6f7g8h9i0j1"
-}
-
-Error (401):
-{
-  "error": "Authentication required",
-  "message": "Please log in to perform this action"
-}
-```
-
-#### PUT `/api/bookings/:id` рџ”’ Protected
-Update existing booking
-```json
-Request: Same as POST + status field
-
-Response (200): Updated booking object
-Response (404): { "error": "Booking not found" }
-```
-
-#### DELETE `/api/bookings/:id` рџ”’ Protected
-Delete booking
-```json
-Response (200):
-{
-  "message": "Booking deleted successfully"
-}
-
-Response (404):
-{
-  "error": "Booking not found"
-}
-```
-
----
-
-## рџЋ“ Defense Preparation
-
-### Key Concepts to Explain
-
-#### 1. How Sessions Work
-**Student Answer:**
-"When a user logs in, the server validates their credentials using bcrypt. If valid, the server creates a session object containing user information and stores it in MongoDB. The server generates a unique session ID and sends it to the client as an HttpOnly cookie. On subsequent requests, the client automatically sends this cookie. The server validates the session ID, retrieves the session data from MongoDB, and authorizes the request. Sessions expire after 24 hours or when the user logs out."
-
-#### 2. Purpose of HttpOnly and Secure Flags
-**Student Answer:**
-- **HttpOnly**: Prevents JavaScript from accessing cookies via `document.cookie`. This protects against XSS (Cross-Site Scripting) attacks where malicious scripts try to steal session cookies.
-- **Secure**: Ensures cookies are only sent over HTTPS connections. This prevents man-in-the-middle attacks where attackers intercept HTTP traffic to steal cookies.
-- **SameSite**: Prevents CSRF (Cross-Site Request Forgery) by not sending cookies on cross-origin requests.
-
-#### 3. Authentication vs Authorization
-**Student Answer:**
-- **Authentication**: Verifying WHO the user is. Example: Login with username/password proves identity.
-- **Authorization**: Verifying WHAT the user can do. Example: Checking if user has permission to delete bookings.
-
-In our app:
-- `isAuthenticated()` middleware handles authentication
-- `isAdmin()` middleware handles authorization based on user role
-
-#### 4. Password Security with Bcrypt
-**Student Answer:**
-"We use bcrypt to hash passwords with 10 salt rounds. When a user is created, we hash their password before storing it. During login, we use `bcrypt.compare()` to verify the password against the hash. We NEVER store plain-text passwords. Even if the database is compromised, attackers cannot retrieve original passwords due to bcrypt's one-way hashing algorithm."
-
-#### 5. Why Generic Error Messages?
-**Student Answer:**
-"We use generic messages like 'Invalid credentials' instead of 'Username not found' or 'Wrong password' to prevent attackers from enumerating valid usernames. If we say 'Username not found', attackers know that username doesn't exist. Generic messages provide no information about which part of the login failed."
-
----
-
-## рџЋЇ Demo Scenarios for Defense
-
-### Scenario 1: Demonstrate Full CRUD
-1. Open http://localhost:3000/admin/login
-2. Login with credentials from `.env`
-3. **CREATE**: Click "Create New Booking" в†’ Fill form в†’ Save
-4. **READ**: View booking in table with all details
-5. **UPDATE**: Click edit icon в†’ Modify fields в†’ Save
-6. **DELETE**: Click delete icon в†’ Confirm deletion
-
-### Scenario 2: Show Unauthorized Access Prevention
-1. Open browser DevTools в†’ Application в†’ Cookies
-2. Delete session cookie
-3. Try to create/update/delete booking
-4. Show 401 Unauthorized error
-5. Re-login to regain access
-
-### Scenario 3: Session Persistence
-1. Login to dashboard
-2. Refresh page multiple times
-3. Show session persists (user still logged in)
-4. Check MongoDB sessions collection
-5. Logout and show session destroyed
-
-### Scenario 4: Cookie Security
-1. Open DevTools в†’ Application в†’ Cookies
-2. Show `sessionId` cookie
-3. Point out `HttpOnly` flag (вњ“)
-4. Point out `Secure` flag (вњ“ in production)
-5. Try to access cookie via console: `document.cookie`
-6. Show it's not accessible (HttpOnly protection)
-
----
-
-## рџ“Ѓ Project Structure
+## Project Structure
 
 ```
-Comfort-Hoetel/
-в”њв”Ђв”Ђ рџ“„ server.js                    # Main Express server
-в”њв”Ђв”Ђ рџ“„ init-users.js                # User initialization script
-в”њв”Ђв”Ђ рџ“„ seed-bookings.js             # Database seeding script
-в”њв”Ђв”Ђ рџ“„ package.json                 # Dependencies
-в”њв”Ђв”Ђ рџ“„ .env                         # Environment variables
-в”њв”Ђв”Ђ рџ“„ DEPLOYMENT_GUIDE.md          # Comprehensive guide
-в”њв”Ђв”Ђ рџ“‚ database/
-в”‚   в””в”Ђв”Ђ рџ“„ mongo.js                # MongoDB connection
-в”њв”Ђв”Ђ рџ“‚ views/
-в”‚   в”њв”Ђв”Ђ рџ“„ index.html              # Home page
-в”‚   в”њв”Ђв”Ђ рџ“„ admin-login.html        # Secure login page
-в”‚   в”њв”Ђв”Ђ рџ“„ admin-dashboard.html    # CRUD dashboard
-в”‚   в”њв”Ђв”Ђ рџ“„ rooms.html              # Rooms catalog
-в”‚   в”њв”Ђв”Ђ рџ“„ booking.html            # Public booking
-в”‚   в”њв”Ђв”Ђ рџ“„ about.html              # About page
-в”‚   в”њв”Ђв”Ђ рџ“„ contact.html            # Contact page
-в”‚   в””в”Ђв”Ђ рџ“„ 404.html                # Error page
-в””в”Ђв”Ђ рџ“‚ public/
-    в””в”Ђв”Ђ рџ“„ style.css               # Styles
+ComfortHotel/
+в”њв”Ђв”Ђ server.js
+в”њв”Ђв”Ђ init-users.js
+в”њв”Ђв”Ђ seed-bookings.js
+в”њв”Ђв”Ђ package.json
+в”њв”Ђв”Ђ .env
+в”њв”Ђв”Ђ database/
+в”‚   в””в”Ђв”Ђ mongo.js
+в”њв”Ђв”Ђ views/
+в”‚   в”њв”Ђв”Ђ index.html
+в”‚   в”њв”Ђв”Ђ admin-login.html
+в”‚   в”њв”Ђв”Ђ admin-dashboard.html
+в”‚   в”њв”Ђв”Ђ rooms.html
+в”‚   в”њв”Ђв”Ђ booking.html
+в”‚   в”њв”Ђв”Ђ about.html
+в”‚   в”њв”Ђв”Ђ contact.html
+в”‚   в””в”Ђв”Ђ 404.html
+в””в”Ђв”Ђ public/
+    в””в”Ђв”Ђ style.css
 ```
 
----
+## Production Notes
 
-## рџ”§ Technologies
+Before deploying to production, make sure to:
 
-| Category | Technology |
-|----------|-----------|
-| Runtime | Node.js v14+ |
-| Framework | Express.js 5.x |
-| Database | MongoDB 6.x |
-| Session Store | connect-mongo |
-| Authentication | bcrypt + express-session |
-| Frontend | HTML5, Bootstrap 5, Vanilla JS |
-| Security | HttpOnly cookies, CSRF protection |
-
----
-
-## рџљЂ Deployment Checklist
-
-Before deploying to production (Render, Railway, etc.):
-
-- [ ] Update `SESSION_SECRET` to strong random string
-- [ ] Set `NODE_ENV=production`
-- [ ] Update MongoDB URI to production database
-- [ ] Run `node init-users.js` on production DB
-- [ ] Run `node seed-bookings.js` on production DB
-- [ ] Ensure HTTPS is enabled (Secure cookies)
-- [ ] Test all CRUD operations
-- [ ] Test authentication flow
-- [ ] Verify cookie security flags
-
----
-
-## рџђ› Common Issues & Solutions
-
-### Issue: Session not saving
-**Solution:** Check MongoDB connection and ensure `connect-mongo` is properly configured.
-
-### Issue: 401 on CRUD operations
-**Solution:** Login first. Sessions require authentication for write operations.
-
-### Issue: Users not found
-**Solution:** Run `node init-users.js`
-
-### Issue: Empty bookings
-**Solution:** Run `node seed-bookings.js`
-
----
-
-## рџ“Љ Database Schema
-
-### users Collection
-```javascript
-{
-  _id: ObjectId,
-  username: String,
-  password: String (bcrypt hashed),
-  role: String (admin/manager),
-  email: String,
-  fullName: String,
-  created_at: Date
-}
-```
-
-### bookings Collection
-```javascript
-{
-  _id: ObjectId,
-  roomName: String,
-  roomType: String,
-  guestName: String,
-  guestEmail: String,
-  guestPhone: String,
-  checkInDate: Date,
-  checkOutDate: Date,
-  duration: Number (auto-calculated),
-  numberOfGuests: Number,
-  totalPrice: Number,
-  specialRequests: String,
-  status: String (pending/confirmed/checked-in/completed/cancelled),
-  created_at: Date,
-  created_by: String (username),
-  updated_at: Date,
-  updated_by: String (username)
-}
-```
-
-### sessions Collection
-```javascript
-{
-  _id: String (session ID),
-  expires: Date,
-  session: {
-    cookie: {...},
-    user: {
-      id: String,
-      username: String,
-      role: String,
-      email: String,
-      fullName: String
-    }
-  }
-}
-
-For detailed deployment instructions, see [DEPLOYMENT_GUIDE.md](DEPLOYMENT_GUIDE.md)
-
+- Set a strong `SESSION_SECRET`
+- Use a production MongoDB database
+- Enable HTTPS
+- Set `NODE_ENV=production`
+- Initialize users in the production database
+- Seed data if needed
