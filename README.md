@@ -1,18 +1,18 @@
 
 # Comfort Hotel
 
-A hotel booking system built with Node.js, Express, MongoDB, and session-based authentication. 
+A hotel booking system built with Node.js, Express, PostgreSQL, and session-based authentication.
 The project provides a public booking interface together with protected admin and staff functionality for managing hotel reservations.
 
 ## Features
 
-- Session-based authentication with `express-session` and MongoDB store
+- Session-based authentication with `express-session` and PostgreSQL store
 - Secure password hashing with `bcrypt`
 - Cookie protection with `HttpOnly`, `Secure`, and `SameSite`
 - Role-based authorization for protected actions
 - Full booking CRUD through a web interface
 - Validation for email, phone, dates, and guest count
-- Realistic hotel booking domain model with seeded sample data
+- Realistic hotel booking domain model
 
 ## Tech Stack
 
@@ -20,8 +20,8 @@ The project provides a public booking interface together with protected admin an
 |---|---|
 | Runtime | Node.js |
 | Framework | Express.js |
-| Database | MongoDB |
-| Session Store | connect-mongo |
+| Database | PostgreSQL |
+| Session Store | connect-pg-simple |
 | Authentication | express-session + bcrypt |
 | Frontend | HTML, Bootstrap, Vanilla JS |
 
@@ -41,27 +41,19 @@ Create a `.env` file in the project root:
 
 ```env
 PORT=3000
-MONGO_URI=your_mongodb_connection_string
+DATABASE_URL=postgres://comforthotel:comforthotel@localhost:5432/comforthotel
 SESSION_SECRET=your_session_secret
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=your_password
-STAFF_USERNAME=staff
-STAFF_PASSWORD=your_password
+ADMIN_EMAIL=admin@comforthotel.local
+ADMIN_FULL_NAME=Administrator
+MANAGER_USERNAME=manager
+MANAGER_PASSWORD=your_password
+MANAGER_EMAIL=manager@comforthotel.local
+MANAGER_FULL_NAME=Hotel Manager
 ```
 
-### 3. Initialize users
-
-```bash
-node init-users.js
-```
-
-### 4. Seed sample bookings
-
-```bash
-node seed-bookings.js
-```
-
-### 5. Start the server
+### 3. Start the server
 
 ```bash
 npm start
@@ -77,7 +69,7 @@ npm start
 
 ## Authentication and Security
 
-This project uses session-based authentication. User credentials are verified with `bcrypt`, sessions are stored in MongoDB, and session IDs are transmitted via secure cookies configured with `HttpOnly`, `Secure` (production only), and `SameSite=Strict`. This helps protect the application against common attacks such as XSS and CSRF.
+This project uses session-based authentication. User credentials are verified with `bcrypt`, sessions are stored in PostgreSQL, and session IDs are transmitted via secure cookies configured with `HttpOnly`, `Secure` (production only), and `SameSite=Strict`. This helps protect the application against common attacks such as XSS and CSRF.
 
 ## Booking Model
 
@@ -117,7 +109,7 @@ ComfortHotel/
 ├── package.json
 ├── .env
 ├── database/
-│   └── mongo.js
+│   └── postgres.js
 ├── views/
 │   ├── index.html
 │   ├── admin-login.html
@@ -136,8 +128,6 @@ ComfortHotel/
 Before deploying to production, make sure to:
 
 - Set a strong `SESSION_SECRET`
-- Use a production MongoDB database
+- Use a production PostgreSQL database
 - Enable HTTPS
 - Set `NODE_ENV=production`
-- Initialize users in the production database
-- Seed data if needed
