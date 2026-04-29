@@ -41,21 +41,16 @@ async function createBooking(req, res) {
   }
 
   try {
-    const isAvailable = await bookingsService.checkAvailability(
-      validation.data.roomType,
-      validation.data.checkInDate,
-      validation.data.checkOutDate
-    );
-    if (!isAvailable) {
-      return res.status(400).json({ error: 'Room is not available for the selected dates' });
-    }
-
     const result = await bookingsService.createBooking({
       ...validation.data,
       status: 'pending',
       created_at: new Date(),
       created_by: getAuditUser(req),
-    });
+    }, validation.roomConfig.count);
+
+    if (result.unavailable) {
+      return res.status(400).json({ error: 'Room is not available for the selected dates' });
+    }
 
     return res.status(201).json({
       message: 'Booking created successfully',
@@ -74,21 +69,16 @@ async function createPublicBooking(req, res) {
   }
 
   try {
-    const isAvailable = await bookingsService.checkAvailability(
-      validation.data.roomType,
-      validation.data.checkInDate,
-      validation.data.checkOutDate
-    );
-    if (!isAvailable) {
-      return res.status(400).json({ error: 'Room is not available for the selected dates' });
-    }
-
     const result = await bookingsService.createBooking({
       ...validation.data,
       status: 'pending',
       created_at: new Date(),
       created_by: 'public_form',
-    });
+    }, validation.roomConfig.count);
+
+    if (result.unavailable) {
+      return res.status(400).json({ error: 'Room is not available for the selected dates' });
+    }
 
     return res.status(201).json({
       message: 'Booking request submitted successfully',
@@ -111,21 +101,15 @@ async function updateBooking(req, res) {
   }
 
   try {
-    const isAvailable = await bookingsService.checkAvailability(
-      validation.data.roomType,
-      validation.data.checkInDate,
-      validation.data.checkOutDate,
-      req.params.id
-    );
-    if (!isAvailable) {
-      return res.status(400).json({ error: 'Room is not available for the selected dates' });
-    }
-
     const result = await bookingsService.updateBooking(req.params.id, {
       ...validation.data,
       updated_at: new Date(),
       updated_by: getAuditUser(req),
-    });
+    }, validation.roomConfig.count);
+
+    if (result.unavailable) {
+      return res.status(400).json({ error: 'Room is not available for the selected dates' });
+    }
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ error: 'Booking not found' });
