@@ -1,11 +1,24 @@
-﻿const roomsService = require('../services/roomsService');
+﻿const config = require('../config/env');
+
+async function listRoomsForView() {
+  if (!config.productServiceUrl) {
+    throw new Error('PRODUCT_SERVICE_URL is required to render room views');
+  }
+
+  const response = await fetch(`${config.productServiceUrl}/api/rooms`);
+  if (!response.ok) {
+    throw new Error(`Product service returned ${response.status}`);
+  }
+
+  return response.json();
+}
 
 function sendView(pageName, locals = {}) {
   return async (req, res, next) => {
     try {
       const viewLocals = { ...locals };
       if (pageName === 'rooms' || pageName === 'booking') {
-        const rooms = await roomsService.listRooms();
+        const rooms = await listRoomsForView();
         viewLocals.rooms = rooms || [];
       }
       res.render(pageName, viewLocals);

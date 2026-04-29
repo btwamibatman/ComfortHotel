@@ -1,0 +1,8 @@
+﻿# To simulate the incident, run:
+# docker compose -f docker-compose.yml -f docker-compose.incident.yml up -d
+
+services:
+  order-service:
+    environment:
+      # INTENTIONAL FAILURE: Invalid database hostname (wrong-postgres-host)
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:?DB_PASSWORD is required}@wrong-postgres-host:5432/comforthotel_order
