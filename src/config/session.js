@@ -1,16 +1,16 @@
 const session = require('express-session');
-const MongoStore = require('connect-mongo');
+const PgSession = require('connect-pg-simple')(session);
 const config = require('./env');
+const { pool } = require('../database/postgres');
 
 function createSessionMiddleware() {
   return session({
     secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: config.mongoUri,
-      dbName: config.mongoDbName,
-      collectionName: 'sessions',
+    store: new PgSession({
+      pool,
+      tableName: 'sessions',
       ttl: config.sessionTtlSeconds,
     }),
     cookie: {
