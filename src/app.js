@@ -33,8 +33,8 @@ if (config.isProduction) {
 app.set('view engine', 'ejs');
 app.set('views', viewsDir);
 app.use(express.static(publicDir));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+app.use(express.json({ limit: '100kb' }));
 app.use(createSessionMiddleware());
 app.use(requestLogger);
 

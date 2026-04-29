@@ -438,6 +438,20 @@
   let currentUser = null;
   const isAdminArea = window.location.pathname.startsWith('/admin/');
   const loginPath = isAdminArea ? '/admin/login' : '/staff/login';
+
+  function escapeHtml(value) {
+    return String(value ?? '').replace(/[&<>"']/g, (char) => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#39;',
+    }[char]));
+  }
+
+  function escapeAttribute(value) {
+    return escapeHtml(value).replace(/`/g, '&#96;');
+  }
   
   // Check authentication on page load
   async function checkAuth() {
@@ -477,8 +491,9 @@
       
       if (isAdmin) {
         document.getElementById('roomsTabItem').style.display = 'block';
-        loadRooms(); // Load rooms if admin
       }
+
+      await loadRooms();
       
       return true;
     } catch (error) {
@@ -548,8 +563,13 @@
     tbody.innerHTML = bookings.map(booking => {
       const checkIn = new Date(booking.checkInDate).toLocaleDateString();
       const checkOut = new Date(booking.checkOutDate).toLocaleDateString();
-      const statusClass = `status-${booking.status}`;
-      const shortId = booking._id.substring(booking._id.length - 6);
+      const status = escapeHtml(booking.status);
+      const statusClass = `status-${status}`;
+      const shortId = escapeHtml(booking._id.substring(booking._id.length - 6));
+      const guestName = escapeHtml(booking.guestName);
+      const guestEmail = escapeHtml(booking.guestEmail);
+      const roomName = escapeHtml(booking.roomName);
+      const totalPrice = Number(booking.totalPrice || 0).toFixed(2);
       const isAdmin = currentUser && currentUser.role === 'admin';
       const isManager = currentUser && currentUser.role === 'manager';
       
@@ -576,14 +596,14 @@
       return `
         <tr>
           <td><code>${shortId}</code></td>
-          <td>${booking.guestName}</td>
-          <td>${booking.guestEmail}</td>
-          <td>${booking.roomName}</td>
+          <td>${guestName}</td>
+          <td>${guestEmail}</td>
+          <td>${roomName}</td>
           <td>${checkIn}</td>
           <td>${checkOut}</td>
           <td>${booking.numberOfGuests}</td>
-          <td>$${booking.totalPrice.toFixed(2)}</td>
-          <td><span class="status-badge ${statusClass}">${booking.status}</span></td>
+          <td>$${totalPrice}</td>
+          <td><span class="status-badge ${statusClass}">${status}</span></td>
           <td class="action-buttons">
             <button class="btn btn-sm btn-info" onclick="viewBooking('${booking._id}')" title="View">
               <i class="fas fa-eye"></i>
@@ -632,6 +652,7 @@
     document.getElementById('modalTitle').textContent = 'Create New Booking';
     document.getElementById('bookingForm').reset();
     document.getElementById('bookingId').value = '';
+    updateRoomSelects();
     
     // Set minimum date to today
     const today = new Date().toISOString().split('T')[0];
@@ -647,19 +668,20 @@
     const booking = allBookings.find(b => b._id === id);
     if (!booking) return;
     
-    const statusClass = `status-${booking.status}`;
+    const status = escapeHtml(booking.status);
+    const statusClass = `status-${status}`;
     document.getElementById('viewDetailsBody').innerHTML = `
       <div class="row">
         <div class="col-md-6">
           <h6 class="text-muted mb-3">Guest Information</h6>
-          <p><strong>Name:</strong> ${booking.guestName}</p>
-          <p><strong>Email:</strong> ${booking.guestEmail}</p>
-          <p><strong>Phone:</strong> ${booking.guestPhone || 'N/A'}</p>
+          <p><strong>Name:</strong> ${escapeHtml(booking.guestName)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(booking.guestEmail)}</p>
+          <p><strong>Phone:</strong> ${escapeHtml(booking.guestPhone || 'N/A')}</p>
           <p><strong>Guests:</strong> ${booking.numberOfGuests}</p>
         </div>
         <div class="col-md-6">
           <h6 class="text-muted mb-3">Booking Details</h6>
-          <p><strong>Room:</strong> ${booking.roomName} (${booking.roomType})</p>
+          <p><strong>Room:</strong> ${escapeHtml(booking.roomName)} (${escapeHtml(booking.roomType)})</p>
           <p><strong>Check-In:</strong> ${new Date(booking.checkInDate).toLocaleDateString()}</p>
           <p><strong>Check-Out:</strong> ${new Date(booking.checkOutDate).toLocaleDateString()}</p>
           <p><strong>Duration:</strong> ${booking.duration} night(s)</p>
@@ -668,11 +690,11 @@
       <hr>
       <div class="row">
         <div class="col-md-6">
-          <p><strong>Total Price:</strong> $${booking.totalPrice.toFixed(2)}</p>
-          <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${booking.status}</span></p>
+          <p><strong>Total Price:</strong> $${Number(booking.totalPrice || 0).toFixed(2)}</p>
+          <p><strong>Status:</strong> <span class="status-badge ${statusClass}">${status}</span></p>
         </div>
         <div class="col-md-6">
-          <p><strong>Special Requests:</strong> ${booking.specialRequests || 'None'}</p>
+          <p><strong>Special Requests:</strong> ${escapeHtml(booking.specialRequests || 'None')}</p>
           <p><strong>Created:</strong> ${new Date(booking.created_at).toLocaleString()}</p>
           ${booking.updated_at ? `<p><strong>Last Updated:</strong> ${new Date(booking.updated_at).toLocaleString()}</p>` : ''}
         </div>
@@ -824,9 +846,9 @@
     
     tbody.innerHTML = rooms.map(room => `
       <tr>
-        <td><code>${room.type}</code></td>
-        <td>${room.name}</td>
-        <td>$${room.price.toFixed(2)}</td>
+        <td><code>${escapeHtml(room.type)}</code></td>
+        <td>${escapeHtml(room.name)}</td>
+        <td>$${Number(room.price || 0).toFixed(2)}</td>
         <td>${room.count}</td>
         <td>
           <button class="btn btn-sm btn-warning" onclick="editRoom('${room._id}')" title="Edit">
@@ -842,9 +864,33 @@
 
   function updateRoomSelects() {
     const roomTypeSelect = document.getElementById('roomType');
+    const roomNameSelect = document.getElementById('roomName');
     if (roomTypeSelect) {
       roomTypeSelect.innerHTML = '<option value="">Select Type</option>' + 
-        allRooms.map(r => `<option value="${r.type}">${r.name}</option>`).join('');
+        allRooms.map(r => `<option value="${escapeAttribute(r.type)}">${escapeHtml(r.name)} (${escapeHtml(r.type)})</option>`).join('');
+    }
+    if (roomNameSelect) {
+      roomNameSelect.innerHTML = '<option value="">Select Room</option>' +
+        allRooms.map(r => `<option value="${escapeAttribute(r.name)}" data-room-type="${escapeAttribute(r.type)}">${escapeHtml(r.name)}</option>`).join('');
+    }
+  }
+
+  function syncRoomNameFromType() {
+    const roomTypeSelect = document.getElementById('roomType');
+    const roomNameSelect = document.getElementById('roomName');
+    const room = allRooms.find(r => r.type === roomTypeSelect.value);
+    if (room && roomNameSelect) {
+      roomNameSelect.value = room.name;
+    }
+  }
+
+  function syncRoomTypeFromName() {
+    const roomTypeSelect = document.getElementById('roomType');
+    const roomNameSelect = document.getElementById('roomName');
+    const selectedOption = roomNameSelect?.selectedOptions?.[0];
+    const roomType = selectedOption?.dataset?.roomType;
+    if (roomType && roomTypeSelect) {
+      roomTypeSelect.value = roomType;
     }
   }
 
@@ -980,6 +1026,9 @@
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', async function() {
+    document.getElementById('roomType')?.addEventListener('change', syncRoomNameFromType);
+    document.getElementById('roomName')?.addEventListener('change', syncRoomTypeFromName);
+
     const isAuth = await checkAuth();
     if (isAuth) {
       await loadBookings();
