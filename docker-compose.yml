@@ -118,6 +118,7 @@
       PORT: ${PORT:-3000}
       DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/comforthotel
       PRODUCT_SERVICE_URL: http://product-service:3000
+      CHAT_SERVICE_URL: http://chat-service:3000
       SESSION_SECRET: ${SESSION_SECRET}
       SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-86400}
       ADMIN_USERNAME: ${ADMIN_USERNAME}
@@ -136,6 +137,8 @@
       postgres:
         condition: service_healthy
       product-service:
+        condition: service_healthy
+      chat-service:
         condition: service_healthy
     expose:
       - "3000"
