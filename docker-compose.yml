@@ -1,19 +1,68 @@
 services:
-  postgres:
+  postgres-app:
     image: postgres:16-alpine
-    container_name: comforthotel-postgres
+    container_name: comforthotel-postgres-app
     restart: unless-stopped
     environment:
-      POSTGRES_DB: comforthotel
+      POSTGRES_DB: comforthotel_app
       POSTGRES_USER: comforthotel
-      POSTGRES_PASSWORD: comforthotel
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-comforthotel}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_app_data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel"]
+      test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_app"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-product:
+    image: postgres:16-alpine
+    container_name: comforthotel-postgres-product
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: comforthotel_product
+      POSTGRES_USER: comforthotel
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-comforthotel}
+    volumes:
+      - postgres_product_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_product"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: comforthotel-postgres-order
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: comforthotel_order
+      POSTGRES_USER: comforthotel
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-comforthotel}
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_order"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  postgres-chat:
+    image: postgres:16-alpine
+    container_name: comforthotel-postgres-chat
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: comforthotel_chat
+      POSTGRES_USER: comforthotel
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-comforthotel}
+    volumes:
+      - postgres_chat_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_chat"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -27,9 +76,9 @@ services:
       NODE_ENV: production
       SERVICE_NAME: product-service
       PORT: 3000
-      DATABASE_URL: postgres://comforthotel:comforthotel@postgres:5432/comforthotel
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:-comforthotel}@postgres-product:5432/comforthotel_product
     depends_on:
-      postgres:
+      postgres-product:
         condition: service_healthy
     expose:
       - "3000"
@@ -48,10 +97,10 @@ services:
       NODE_ENV: production
       SERVICE_NAME: order-service
       PORT: 3000
-      DATABASE_URL: postgres://comforthotel:comforthotel@postgres:5432/comforthotel
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:-comforthotel}@postgres-order:5432/comforthotel_order
       PRODUCT_SERVICE_URL: http://product-service:3000
     depends_on:
-      postgres:
+      postgres-order:
         condition: service_healthy
       product-service:
         condition: service_healthy
@@ -72,9 +121,9 @@ services:
       NODE_ENV: production
       SERVICE_NAME: chat-service
       PORT: 3000
-      DATABASE_URL: postgres://comforthotel:comforthotel@postgres:5432/comforthotel
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:-comforthotel}@postgres-chat:5432/comforthotel_chat
     depends_on:
-      postgres:
+      postgres-chat:
         condition: service_healthy
     expose:
       - "3000"
@@ -93,11 +142,11 @@ services:
       NODE_ENV: production
       SERVICE_NAME: auth-service
       PORT: 3000
-      DATABASE_URL: postgres://comforthotel:comforthotel@postgres:5432/comforthotel
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:-comforthotel}@postgres-app:5432/comforthotel_app
       SESSION_SECRET: ${SESSION_SECRET}
       SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-86400}
     depends_on:
-      postgres:
+      postgres-app:
         condition: service_healthy
     expose:
       - "3000"
@@ -116,7 +165,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: ${PORT:-3000}
-      DATABASE_URL: postgres://comforthotel:comforthotel@postgres:5432/comforthotel
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:-comforthotel}@postgres-app:5432/comforthotel_app
       PRODUCT_SERVICE_URL: http://product-service:3000
       CHAT_SERVICE_URL: http://chat-service:3000
       SESSION_SECRET: ${SESSION_SECRET}
@@ -134,7 +183,7 @@ services:
       USER_EMAIL: ${USER_EMAIL:-}
       USER_FULL_NAME: ${USER_FULL_NAME:-}
     depends_on:
-      postgres:
+      postgres-app:
         condition: service_healthy
       product-service:
         condition: service_healthy
@@ -142,6 +191,11 @@ services:
         condition: service_healthy
     expose:
       - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   gateway:
     build:
@@ -151,8 +205,14 @@ services:
     restart: unless-stopped
     depends_on:
       app:
-        condition: service_started
+        condition: service_healthy
       auth-service:
+        condition: service_healthy
+      order-service:
+        condition: service_healthy
+      product-service:
+        condition: service_healthy
+      chat-service:
         condition: service_healthy
     ports:
       - "80:80"
@@ -160,6 +220,7 @@ services:
   prometheus:
     image: prom/prometheus:latest
     container_name: comforthotel-prometheus
+    restart: unless-stopped
     volumes:
       - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
@@ -182,5 +243,8 @@ services:
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
 
 volumes:
-  postgres_data:
+  postgres_app_data:
+  postgres_product_data:
+  postgres_order_data:
+  postgres_chat_data:
   grafana_data:

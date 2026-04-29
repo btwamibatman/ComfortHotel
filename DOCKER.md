@@ -12,7 +12,7 @@
    - `DATABASE_URL=postgres://comforthotel:comforthotel@localhost:5432/comforthotel`
    - `SESSION_SECRET=...`
 
-`docker-compose.yml` overrides `DATABASE_URL` to `postgres://comforthotel:comforthotel@postgres:5432/comforthotel`, so you can keep local `.env` with `localhost` for non-Docker runs.
+`docker-compose.yml` now uses separate PostgreSQL containers per service, so local `.env` values can still point to `localhost` for non-Docker runs while Docker networking keeps the services isolated.
 
 The Docker runtime uses Nginx as the public entrypoint. EJS templates are still rendered by the Express backend; Nginx proxies browser requests to the backend container.
 
@@ -38,6 +38,8 @@ docker compose down -v
 
 - `down` keeps PostgreSQL volume.
 - `down -v` removes PostgreSQL data as well.
+
+Each backend service now has its own PostgreSQL container and volume, so one database failure does not take down the others.
 
 ## 5. Monitoring dashboard
 
