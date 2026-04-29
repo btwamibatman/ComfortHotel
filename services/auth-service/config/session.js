@@ -1,10 +1,11 @@
 ﻿const session = require('express-session');
 const PgSession = require('connect-pg-simple')(session);
+const lusca = require('lusca');
 const config = require('./env');
 const { pool } = require('../database/postgres');
 
 function createSessionMiddleware() {
-  return session({
+  const sessionMiddleware = session({
     secret: config.sessionSecret,
     resave: false,
     saveUninitialized: false,
@@ -21,6 +22,8 @@ function createSessionMiddleware() {
     },
     name: 'sessionId',
   });
+
+  return [sessionMiddleware, lusca.csrf()];
 }
 
 module.exports = createSessionMiddleware;
