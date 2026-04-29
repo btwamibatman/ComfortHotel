@@ -30,11 +30,11 @@
     expose:
       - "3000"
 
-  frontend:
+  gateway:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: comforthotel-frontend
+    container_name: comforthotel-gateway
     restart: unless-stopped
     depends_on:
       - app
