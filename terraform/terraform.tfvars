@@ -1,6 +1,6 @@
 ﻿resource_group_name = "rg-comforthotel-prod"
 location            = "East US"
 vm_name             = "comforthotel-vm"
-vm_size             = "Standard_B2s"
+vm_size             = "Standard_B1ms"
 admin_username      = "azureuser"
 ssh_public_key_path = "~/.ssh/id_rsa.pub"
