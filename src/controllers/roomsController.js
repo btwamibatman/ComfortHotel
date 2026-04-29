@@ -1,5 +1,5 @@
 ﻿const roomsService = require('../services/roomsService');
-const { isValidObjectId } = require('../utils/validators');
+const { isValidRecordId } = require('../utils/validators');
 const logger = require('../utils/logger');
 
 async function listRooms(req, res) {
@@ -13,7 +13,7 @@ async function listRooms(req, res) {
 }
 
 async function getRoomById(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -51,7 +51,7 @@ async function createRoom(req, res) {
 }
 
 async function updateRoom(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -77,7 +77,7 @@ async function updateRoom(req, res) {
 }
 
 async function deleteRoom(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 

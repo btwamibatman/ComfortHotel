@@ -1,5 +1,5 @@
 ﻿const bookingsService = require('../services/bookingsService');
-const { isValidObjectId } = require('../utils/validators');
+const { isValidRecordId } = require('../utils/validators');
 const logger = require('../utils/logger');
 
 async function listBookings(req, res) {
@@ -13,7 +13,7 @@ async function listBookings(req, res) {
 }
 
 async function getBookingById(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -97,7 +97,7 @@ async function createPublicBooking(req, res) {
 }
 
 async function updateBooking(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -136,7 +136,7 @@ async function updateBooking(req, res) {
 }
 
 async function deleteBooking(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -154,7 +154,7 @@ async function deleteBooking(req, res) {
 }
 
 async function updateBookingStatus(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
