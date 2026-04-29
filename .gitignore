@@ -18,3 +18,4 @@ pids
 # Build
 dist/
 build/
+docs/PLAN.md
