@@ -1,6 +1,4 @@
-﻿const { ObjectId } = require('mongodb');
-
-function isValidEmail(email) {
+﻿function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
@@ -31,13 +29,13 @@ function validateBookingDates(checkIn, checkOut) {
   return { valid: true };
 }
 
-function isValidObjectId(id) {
-  return ObjectId.isValid(id);
+function isValidRecordId(id) {
+  return /^[a-f\d]{24}$/i.test(String(id));
 }
 
 module.exports = {
   isValidEmail,
   isValidPhone,
   validateBookingDates,
-  isValidObjectId,
+  isValidRecordId,
 };

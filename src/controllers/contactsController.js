@@ -1,5 +1,5 @@
 ﻿const contactsService = require('../services/contactsService');
-const { isValidObjectId } = require('../utils/validators');
+const { isValidRecordId } = require('../utils/validators');
 const logger = require('../utils/logger');
 
 async function listContacts(req, res) {
@@ -13,7 +13,7 @@ async function listContacts(req, res) {
 }
 
 async function getContactById(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -57,7 +57,7 @@ async function createContact(req, res) {
 }
 
 async function updateContact(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
@@ -89,7 +89,7 @@ async function updateContact(req, res) {
 }
 
 async function deleteContact(req, res) {
-  if (!isValidObjectId(req.params.id)) {
+  if (!isValidRecordId(req.params.id)) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
