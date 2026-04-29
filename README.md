@@ -12,7 +12,7 @@ The project provides a public booking interface together with protected admin an
 - Role-based authorization for protected actions
 - Full booking CRUD through a web interface
 - Validation for email, phone, dates, and guest count
-- Realistic hotel booking domain model with seeded sample data
+- Realistic hotel booking domain model
 
 ## Tech Stack
 
@@ -45,23 +45,15 @@ DATABASE_URL=postgres://comforthotel:comforthotel@localhost:5432/comforthotel
 SESSION_SECRET=your_session_secret
 ADMIN_USERNAME=admin
 ADMIN_PASSWORD=your_password
-STAFF_USERNAME=staff
-STAFF_PASSWORD=your_password
+ADMIN_EMAIL=admin@comforthotel.local
+ADMIN_FULL_NAME=Administrator
+MANAGER_USERNAME=manager
+MANAGER_PASSWORD=your_password
+MANAGER_EMAIL=manager@comforthotel.local
+MANAGER_FULL_NAME=Hotel Manager
 ```
 
-### 3. Initialize users
-
-```bash
-node init-users.js
-```
-
-### 4. Seed sample bookings
-
-```bash
-node seed-bookings.js
-```
-
-### 5. Start the server
+### 3. Start the server
 
 ```bash
 npm start
@@ -139,5 +131,3 @@ Before deploying to production, make sure to:
 - Use a production PostgreSQL database
 - Enable HTTPS
 - Set `NODE_ENV=production`
-- Initialize users in the production database
-- Seed data if needed

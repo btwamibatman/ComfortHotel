@@ -11,7 +11,6 @@
    - `PORT=3000`
    - `DATABASE_URL=postgres://comforthotel:comforthotel@localhost:5432/comforthotel`
    - `SESSION_SECRET=...`
-   - admin/manager credentials (if you use bootstrap scripts)
 
 `docker-compose.yml` overrides `DATABASE_URL` to `postgres://comforthotel:comforthotel@postgres:5432/comforthotel`, so you can keep local `.env` with `localhost` for non-Docker runs.
 
@@ -28,14 +27,7 @@ Open:
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3001
 
-## 4. First-time DB bootstrap (optional but recommended)
-
-```bash
-docker compose exec app node init-users.js
-docker compose exec app node seed-bookings.js
-```
-
-## 5. Useful commands
+## 4. Useful commands
 
 ```bash
 docker compose logs -f gateway
@@ -47,7 +39,7 @@ docker compose down -v
 - `down` keeps PostgreSQL volume.
 - `down -v` removes PostgreSQL data as well.
 
-## 6. Monitoring dashboard
+## 5. Monitoring dashboard
 
 Grafana is preconfigured with:
 - Prometheus data source (`http://prometheus:9090`)
