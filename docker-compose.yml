@@ -147,7 +147,10 @@
     container_name: comforthotel-gateway
     restart: unless-stopped
     depends_on:
-      - app
+      app:
+        condition: service_started
+      auth-service:
+        condition: service_healthy
     ports:
       - "80:80"
 
