@@ -20,3 +20,8 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ["order-service:3000"]
+
+  - job_name: "chat-service"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["chat-service:3000"]
