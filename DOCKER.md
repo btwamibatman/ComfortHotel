@@ -38,7 +38,7 @@ docker compose exec app node seed-bookings.js
 ## 5. Useful commands
 
 ```bash
-docker compose logs -f frontend
+docker compose logs -f gateway
 docker compose logs -f app
 docker compose down
 docker compose down -v
