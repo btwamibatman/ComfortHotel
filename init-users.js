@@ -1,16 +1,15 @@
 require('dotenv').config();
 const bcrypt = require('bcrypt');
-const connectDB = require('./src/database/mongo');
+const { query, close } = require('./src/database/postgres');
 
 async function initializeUsers() {
   try {
-    const db = await connectDB();
-    const usersCollection = db.collection('users');
-
-    const existingUsers = await usersCollection.countDocuments();
+    const countResult = await query('SELECT COUNT(*)::int AS count FROM users');
+    const existingUsers = countResult.rows[0].count;
     if (existingUsers > 0) {
       console.log('Users already exist in database. Skipping initialization.');
       console.log(`Found ${existingUsers} user(s).`);
+      await close();
       process.exit(0);
     }
 
@@ -61,20 +60,19 @@ async function initializeUsers() {
 
     for (const user of usersToCreate) {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      await usersCollection.insertOne({
-        username: user.username,
-        password: hashedPassword,
-        role: user.role,
-        email: user.email,
-        fullName: user.fullName,
-        created_at: new Date(),
-      });
+      await query(
+        `INSERT INTO users (username, password, role, email, full_name, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6)`,
+        [user.username, hashedPassword, user.role, user.email, user.fullName, new Date()]
+      );
     }
 
     console.log('User initialization completed successfully.');
+    await close();
     process.exit(0);
   } catch (error) {
     console.error('Error initializing users:', error);
+    await close();
     process.exit(1);
   }
 }

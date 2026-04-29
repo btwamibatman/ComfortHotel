@@ -1,5 +1,5 @@
 require('dotenv').config();
-const connectDB = require('./src/database/mongo');
+const { query, close } = require('./src/database/postgres');
 
 const roomTypes = [
   { name: 'Deluxe Suite', type: 'suite', pricePerNight: 250 },
@@ -87,13 +87,12 @@ function generateBooking(index) {
 
 async function seedBookings() {
   try {
-    const db = await connectDB();
-    const bookingsCollection = db.collection('bookings');
-
-    const existingBookings = await bookingsCollection.countDocuments();
+    const countResult = await query('SELECT COUNT(*)::int AS count FROM bookings');
+    const existingBookings = countResult.rows[0].count;
     if (existingBookings >= 20) {
       console.log('Database already contains 20+ bookings. Skipping seed.');
       console.log(`Found ${existingBookings} booking(s).`);
+      await close();
       process.exit(0);
     }
 
@@ -102,11 +101,38 @@ async function seedBookings() {
       bookings.push(generateBooking(i));
     }
 
-    const result = await bookingsCollection.insertMany(bookings);
-    console.log(`Successfully inserted ${result.insertedCount} bookings.`);
+    for (const booking of bookings) {
+      await query(
+        `INSERT INTO bookings (
+           room_name, room_type, guest_name, guest_email, guest_phone,
+           check_in_date, check_out_date, duration, number_of_guests,
+           total_price, special_requests, status, created_at
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+        [
+          booking.roomName,
+          booking.roomType,
+          booking.guestName,
+          booking.guestEmail,
+          booking.guestPhone,
+          booking.checkInDate,
+          booking.checkOutDate,
+          booking.duration,
+          booking.numberOfGuests,
+          booking.totalPrice,
+          booking.specialRequests,
+          booking.status,
+          booking.created_at,
+        ]
+      );
+    }
+
+    console.log(`Successfully inserted ${bookings.length} bookings.`);
+    await close();
     process.exit(0);
   } catch (error) {
     console.error('Error seeding bookings:', error);
+    await close();
     process.exit(1);
   }
 }
