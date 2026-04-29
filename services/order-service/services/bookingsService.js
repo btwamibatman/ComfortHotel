@@ -75,6 +75,7 @@ async function validateBookingInput(payload, { allowStatus = false } = {}) {
   const calculatedPrice = roomConfig.price * duration * guests;
 
   return {
+    roomConfig,
     data: {
       roomName: roomConfig.name,
       roomType: roomType.trim(),
@@ -111,12 +112,12 @@ async function checkAvailability(roomType, checkInDate, checkOutDate, excludeBoo
   return overlapCount < roomConfig.count;
 }
 
-async function createBooking(payload) {
-  return bookingsRepository.createBooking(payload);
+async function createBooking(payload, roomCount) {
+  return bookingsRepository.createBookingIfAvailable(payload, roomCount);
 }
 
-async function updateBooking(id, payload) {
-  return bookingsRepository.updateBooking(id, payload);
+async function updateBooking(id, payload, roomCount) {
+  return bookingsRepository.updateBookingIfAvailable(id, payload, roomCount);
 }
 
 function validateStatusTransition(currentStatus, newStatus) {
