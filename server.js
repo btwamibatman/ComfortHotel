@@ -1,7 +1,7 @@
 ﻿const app = require('./src/app');
 const config = require('./src/config/env');
 const logger = require('./src/utils/logger');
-const connectDB = require('./src/database/mongo');
+const connectDB = require('./src/database/postgres');
 const roomsService = require('./src/services/roomsService');
 
 async function startServer() {
