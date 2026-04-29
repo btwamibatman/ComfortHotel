@@ -1,14 +1,19 @@
 ﻿services:
-  mongo:
-    image: mongo:7
-    container_name: comforthotel-mongo
+  postgres:
+    image: postgres:16-alpine
+    container_name: comforthotel-postgres
     restart: unless-stopped
+    environment:
+      POSTGRES_DB: comforthotel
+      POSTGRES_USER: comforthotel
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
     ports:
-      - "27017:27017"
+      - "5432:5432"
     volumes:
-      - mongo_data:/data/db
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
-      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -19,13 +24,26 @@
       dockerfile: Dockerfile.backend
     container_name: comforthotel-app
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
       NODE_ENV: production
-      MONGO_URI: mongodb://mongo:27017
+      PORT: ${PORT:-3000}
+      DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/comforthotel
+      SESSION_SECRET: ${SESSION_SECRET}
+      SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-86400}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_FULL_NAME: ${ADMIN_FULL_NAME}
+      MANAGER_USERNAME: ${MANAGER_USERNAME}
+      MANAGER_PASSWORD: ${MANAGER_PASSWORD}
+      MANAGER_EMAIL: ${MANAGER_EMAIL}
+      MANAGER_FULL_NAME: ${MANAGER_FULL_NAME}
+      USER_USERNAME: ${USER_USERNAME:-}
+      USER_PASSWORD: ${USER_PASSWORD:-}
+      USER_EMAIL: ${USER_EMAIL:-}
+      USER_FULL_NAME: ${USER_FULL_NAME:-}
     depends_on:
-      mongo:
+      postgres:
         condition: service_healthy
     expose:
       - "3000"
@@ -66,5 +84,5 @@
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
 
 volumes:
-  mongo_data:
+  postgres_data:
   grafana_data:

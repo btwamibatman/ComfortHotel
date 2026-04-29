@@ -9,11 +9,11 @@
 1. Make sure `.env` exists in project root.
 2. Ensure at least these vars are set in `.env`:
    - `PORT=3000`
-   - `MONGO_DB_NAME=...`
+   - `DATABASE_URL=...`
    - `SESSION_SECRET=...`
    - admin/manager credentials (if you use bootstrap scripts)
 
-`docker-compose.yml` overrides `MONGO_URI` to `mongodb://mongo:27017`, so you can keep local `.env` with `localhost` for non-Docker runs.
+`docker-compose.yml` overrides `DATABASE_URL` to `postgres://comforthotel:${DB_PASSWORD:?DB_PASSWORD is required}@postgres:5432/comforthotel`, so you can keep local `.env` with `localhost` for non-Docker runs.
 
 The Docker runtime uses Nginx as the public entrypoint. EJS templates are still rendered by the Express backend; Nginx proxies browser requests to the backend container.
 
@@ -44,8 +44,8 @@ docker compose down
 docker compose down -v
 ```
 
-- `down` keeps MongoDB volume.
-- `down -v` removes MongoDB data as well.
+- `down` keeps PostgreSQL volume.
+- `down -v` removes PostgreSQL data as well.
 
 ## 6. Monitoring dashboard
 
