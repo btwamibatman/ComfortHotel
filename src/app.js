@@ -5,12 +5,16 @@ const createSessionMiddleware = require('./config/session');
 const requestLogger = require('./middlewares/requestLogger');
 const { apiNotFound, notFound, errorHandler } = require('./middlewares/errorHandlers');
 const webRoutes = require('./routes/webRoutes');
-const authRoutes = require('./routes/authRoutes');
 const apiRoutes = require('./routes/api');
 const client = require('prom-client');
 const register = client.register;
 
 const app = express();
+
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
 client.collectDefaultMetrics();
 
 // Custom HTTP metrics
@@ -34,8 +38,8 @@ if (config.isProduction) {
 app.set('view engine', 'ejs');
 app.set('views', viewsDir);
 app.use(express.static(publicDir));
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+app.use(express.json({ limit: '100kb' }));
 app.use(createSessionMiddleware());
 app.use(requestLogger);
 
@@ -54,8 +58,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-app.use(authRoutes);
 app.use('/api', apiRoutes);
 app.use(webRoutes);
 
