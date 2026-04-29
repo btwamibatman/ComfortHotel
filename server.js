@@ -7,9 +7,11 @@ const roomsService = require('./src/services/roomsService');
 async function startServer() {
   try {
     await connectDB();
-    const initialized = await roomsService.initializeDefaultRooms();
-    if (initialized) {
-      logger.info('Default rooms initialized in the database');
+    if (!config.productServiceUrl) {
+      const initialized = await roomsService.initializeDefaultRooms();
+      if (initialized) {
+        logger.info('Default rooms initialized in the database');
+      }
     }
 
     app.listen(config.port, () => {
