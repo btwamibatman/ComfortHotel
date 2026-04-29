@@ -7,6 +7,7 @@ const config = {
   sessionSecret: process.env.SESSION_SECRET,
   sessionTtlSeconds: Number(process.env.SESSION_TTL_SECONDS),
   productServiceUrl: process.env.PRODUCT_SERVICE_URL,
+  chatServiceUrl: process.env.CHAT_SERVICE_URL,
 };
 
 config.isProduction = config.nodeEnv === 'production';

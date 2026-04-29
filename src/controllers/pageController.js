@@ -1,9 +1,8 @@
-const roomsService = require('../services/roomsService');
 const config = require('../config/env');
 
 async function listRoomsForView() {
   if (!config.productServiceUrl) {
-    return roomsService.listRooms();
+    throw new Error('PRODUCT_SERVICE_URL is required to render room views');
   }
 
   const response = await fetch(`${config.productServiceUrl}/api/rooms`);

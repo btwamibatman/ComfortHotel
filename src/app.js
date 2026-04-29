@@ -5,7 +5,6 @@ const createSessionMiddleware = require('./config/session');
 const requestLogger = require('./middlewares/requestLogger');
 const { apiNotFound, notFound, errorHandler } = require('./middlewares/errorHandlers');
 const webRoutes = require('./routes/webRoutes');
-const authRoutes = require('./routes/authRoutes');
 const apiRoutes = require('./routes/api');
 const client = require('prom-client');
 const register = client.register;
@@ -54,8 +53,6 @@ app.use((req, res, next) => {
   next();
 });
 
-
-app.use(authRoutes);
 app.use('/api', apiRoutes);
 app.use(webRoutes);
 
