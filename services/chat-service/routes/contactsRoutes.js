@@ -4,9 +4,9 @@ const { isAuthenticated } = require('../middlewares/auth');
 
 const router = express.Router();
 
-router.get('/', contactsController.listContacts);
-router.get('/:id', contactsController.getContactById);
 router.post('/', contactsController.createContact);
+router.get('/', isAuthenticated, contactsController.listContacts);
+router.get('/:id', isAuthenticated, contactsController.getContactById);
 router.put('/:id', isAuthenticated, contactsController.updateContact);
 router.delete('/:id', isAuthenticated, contactsController.deleteContact);
 

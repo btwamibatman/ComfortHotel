@@ -21,8 +21,8 @@ const httpRequestDuration = new client.Histogram({
   buckets: [0.05, 0.1, 0.2, 0.3, 0.5, 1, 2],
 });
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: false, limit: '100kb' }));
+app.use(express.json({ limit: '100kb' }));
 
 app.use((req, res, next) => {
   const end = httpRequestDuration.startTimer();
