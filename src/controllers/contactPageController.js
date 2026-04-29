@@ -1,6 +1,7 @@
 ﻿const config = require('../config/env');
 const { isValidEmail } = require('../utils/validators');
 const logger = require('../utils/logger');
+const escapeHtml = require('escape-html');
 
 function validateContactInput({ name, email, message }) {
   if (!name || !email || !message) {
@@ -45,7 +46,8 @@ async function submitPublicContact(req, res) {
       throw new Error(`Chat service returned ${response.status}`);
     }
 
-    return res.send(`<h2>Thanks, ${name}! Your message has been saved.</h2><a href="/">Back</a>`);
+    const safeName = escapeHtml(name.trim());
+    return res.send(`<h2>Thanks, ${safeName}! Your message has been saved.</h2><a href="/">Back</a>`);
   } catch (error) {
     logger.error('Chat service error:', error);
     return res.status(500).send('Error saving data');
