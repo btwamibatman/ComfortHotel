@@ -15,6 +15,8 @@
 
 `docker-compose.yml` overrides `MONGO_URI` to `mongodb://mongo:27017`, so you can keep local `.env` with `localhost` for non-Docker runs.
 
+The Docker runtime uses Nginx as the public entrypoint. EJS templates are still rendered by the Express backend; Nginx proxies browser requests to the backend container.
+
 ## 3. Build and start
 
 ```bash
@@ -22,7 +24,7 @@ docker compose up --build -d
 ```
 
 Open:
-- http://localhost:3000
+- http://localhost
 - Prometheus: http://localhost:9090
 - Grafana: http://localhost:3001
 
@@ -36,6 +38,7 @@ docker compose exec app node seed-bookings.js
 ## 5. Useful commands
 
 ```bash
+docker compose logs -f frontend
 docker compose logs -f app
 docker compose down
 docker compose down -v
