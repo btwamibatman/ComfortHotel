@@ -16,7 +16,7 @@ function createSessionMiddleware() {
     }),
     cookie: {
       httpOnly: true,
-      secure: config.isProduction ? 'auto' : false,
+      secure: true,
       maxAge: config.sessionTtlSeconds * 1000,
       sameSite: 'lax',
     },
