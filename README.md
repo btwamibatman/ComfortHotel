@@ -1,141 +1,140 @@
-﻿
-# Comfort Hotel (Microservices Architecture)
+﻿# ComfortHotel
 
-An enterprise-grade hotel booking system refactored into a microservices architecture using Node.js, Docker, Nginx, and Terraform. Features high availability, fault isolation, monitoring, and structured incident response.
+ComfortHotel is a Dockerized hotel booking system with a web interface, separate backend services, PostgreSQL databases, Nginx gateway, and monitoring.
 
-## Features
+The project is built around a simple hotel workflow:
 
-- **Microservices Architecture**: Functionality distributed across `app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
-- **Fault-Isolation**: Each microservice uses its own dedicated PostgreSQL database container.
-- **API Gateway**: Nginx routing internal traffic and serving as the primary entry point.
-- **Infrastructure as Code**: Terraform configurations to deploy resources to Azure.
-- **Observability**: Built-in metrics scraping with Prometheus and system dashboards via Grafana.
-- **Role-based Authentication**: Session-based auth via PostgreSQL store (`connect-pg-simple`).
+- browse rooms;
+- create bookings;
+- manage staff/admin access;
+- receive contact requests;
+- monitor the running services.
+
+## Services
+
+The application runs as a set of containers:
+
+| Service | Purpose |
+| --- | --- |
+| `gateway` | Public Nginx entrypoint |
+| `app` | Main Express app and EJS pages |
+| `auth-service` | Login, logout, sessions |
+| `product-service` | Room data |
+| `order-service` | Booking data |
+| `chat-service` | Contact requests |
+| `prometheus` | Metrics collection |
+| `grafana` | Monitoring dashboards |
+
+Each backend service uses its own PostgreSQL database container, so service data is isolated.
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Programming | Node.js, Express.js |
-| Databases | PostgreSQL (5 isolated instances) |
-| Reverse Proxy | Nginx Gateway |
-| Orchestration | Docker & Docker Compose |
-| Infrastructure| Terraform (Azure Provider) |
-| Monitoring    | Prometheus & Grafana |
+- Node.js
+- Express
+- EJS
+- PostgreSQL
+- Docker Compose
+- Nginx
+- Prometheus
+- Grafana
+- Terraform
 
-## Getting Started
+## Run with Docker
 
-### 1. Prerequisites
-- Docker and Docker Compose installed.
-- (Optional) Terraform CLI / Azure CLI for cloud deployment.
+Create `.env` from the example file:
 
-### 2. Environment Variables
-Copy `.env.example` to `.env` and fill in your secrets:
 ```bash
 cp .env.example .env
 ```
 
-### 3. Launch the Complete Stack
-Start the web app, microservices, databases, and monitoring stack in detached mode:
+Edit the secrets in `.env`, then start the stack:
+
 ```bash
 docker compose up --build -d
 ```
 
-### 4. Endpoints
-- **Main Web UI**: `http://localhost` (Port 80)
-- **Grafana Dashboard**: `http://localhost:3001`
-- **Prometheus Metrics**: `http://localhost:9090`
+Open:
 
-## Reports & Documentation
-- **[Incident Response & Postmortem (Assignment 4)](docs/INCIDENT_REPORT.md)** 
-- **[Terraform Deployment Guide (Assignment 5)](terraform/DEPLOYMENT.md)**
-- **[Database Fault Isolation Architecture](DOCKER.md)**
+- `http://localhost` - application
+- `http://localhost:9090` - Prometheus
+- `http://localhost:3001` - Grafana
 
-## Simulating an Incident
-To test the monitoring stack, you can introduce a simulated database connection failure to the Order Service:
-```bash
-docker compose -f docker-compose.yml -f docker-compose.incident.yml up -d
-```
-MANAGER_PASSWORD=your_password
-MANAGER_EMAIL=manager@comforthotel.local
-MANAGER_FULL_NAME=Hotel Manager
+Grafana default login:
+
+```text
+admin / admin
 ```
 
-### 3. Start the server
+## Environment
+
+The main variables are listed in `.env.example`.
+
+For a normal Docker run, set at least:
+
+```text
+DB_PASSWORD=
+SESSION_SECRET=
+ADMIN_USERNAME=
+ADMIN_PASSWORD=
+MANAGER_USERNAME=
+MANAGER_PASSWORD=
+```
+
+Optional user credentials are also supported:
+
+```text
+USER_USERNAME=
+USER_PASSWORD=
+USER_EMAIL=
+USER_FULL_NAME=
+```
+
+## Commands
 
 ```bash
+docker compose ps
+docker compose logs -f app
+docker compose logs -f gateway
+docker compose restart grafana
+docker compose down
+docker compose down -v
+```
+
+Use `docker compose down -v` only when you want to remove saved database and Grafana volumes.
+
+## Local Development
+
+The main app can also run directly with Node.js:
+
+```bash
+npm install
 npm start
 ```
 
-## Application URLs
+For local Node mode, PostgreSQL and service URLs must be configured manually in `.env`.
 
-| Route | URL |
-|---|---|
-| Public site | `http://localhost:3000` |
-| Admin login | `http://localhost:3000/admin/login` |
-| Staff login | `http://localhost:3000/staff/login` |
+## Project Layout
 
-## Authentication and Security
-
-This project uses session-based authentication. User credentials are verified with `bcrypt`, sessions are stored in PostgreSQL, and session IDs are transmitted via secure cookies configured with `HttpOnly`, `Secure` (production only), and `SameSite=Strict`. This helps protect the application against common attacks such as XSS and CSRF.
-
-## Booking Model
-
-Each booking contains the following fields: room name, room type, guest name, guest email, guest phone, check-in date, check-out date, stay duration, number of guests, total price, special requests, and booking status.
-
-## API Overview
-
-**Authentication**
-
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/auth/admin/login` | Login as admin |
-| POST | `/auth/logout` | Logout |
-| GET | `/api/auth/status` | Check auth status |
-
-**Bookings**
-
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/api/bookings` | Get all bookings |
-| GET | `/api/bookings/:id` | Get booking by ID |
-| POST | `/api/bookings` | Create booking *(protected)* |
-| PUT | `/api/bookings/:id` | Update booking *(protected)* |
-| DELETE | `/api/bookings/:id` | Delete booking *(protected)* |
-
-## Validation
-
-The application validates email format, phone format, check-in and check-out date logic, and guest count range. It returns appropriate HTTP status codes: `200`, `201`, `400`, `401`, `403`, `404`, and `500`.
-
-## Project Structure
-
-```
+```text
 ComfortHotel/
-в”њв”Ђв”Ђ server.js
-в”њв”Ђв”Ђ init-users.js
-в”њв”Ђв”Ђ seed-bookings.js
-в”њв”Ђв”Ђ package.json
-в”њв”Ђв”Ђ .env
-в”њв”Ђв”Ђ database/
-в”‚   в””в”Ђв”Ђ postgres.js
-в”њв”Ђв”Ђ views/
-в”‚   в”њв”Ђв”Ђ index.html
-в”‚   в”њв”Ђв”Ђ admin-login.html
-в”‚   в”њв”Ђв”Ђ admin-dashboard.html
-в”‚   в”њв”Ђв”Ђ rooms.html
-в”‚   в”њв”Ђв”Ђ booking.html
-в”‚   в”њв”Ђв”Ђ about.html
-в”‚   в”њв”Ђв”Ђ contact.html
-в”‚   в””в”Ђв”Ђ 404.html
-в””в”Ђв”Ђ public/
-    в””в”Ђв”Ђ style.css
+|-- database/          database init scripts
+|-- docs/              reports and extra documentation
+|-- monitoring/        Prometheus and Grafana config
+|-- nginx/             Nginx gateway config
+|-- public/            static files
+|-- scripts/           helper scripts
+|-- services/          auth, product, order, chat services
+|-- src/               main app source
+|-- terraform/         infrastructure files
+|-- views/             EJS pages
+|-- docker-compose.yml
+|-- Dockerfile.backend
+|-- Dockerfile.frontend
+`-- server.js
 ```
 
-## Production Notes
+## Documentation
 
-Before deploying to production, make sure to:
-
-- Set a strong `SESSION_SECRET`
-- Use a production PostgreSQL database
-- Enable HTTPS
-- Set `NODE_ENV=production`
+- [Docker setup](docs/DOCKER.md)
+- [Incident report](docs/INCIDENT_REPORT.md)
+- [Terraform deployment](terraform/DEPLOYMENT.md)
