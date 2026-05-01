@@ -1,6 +1,6 @@
 const express = require('express');
 const { sendView, sendRoomImage } = require('../controllers/pageController');
-const contactsController = require('../controllers/contactsController');
+const contactPageController = require('../controllers/contactPageController');
 const { isAdmin, isStaff } = require('../middlewares/auth');
 
 const router = express.Router();
@@ -55,6 +55,6 @@ router.get('/staff/login', (req, res) => {
 
 router.get('/admin/dashboard', isAdmin, sendView('admin-dashboard', { activePage: '' }));
 router.get('/staff/dashboard', isStaff, sendView('admin-dashboard', { activePage: '' }));
-router.post('/contact', contactsController.submitPublicContact);
+router.post('/contact', contactPageController.submitPublicContact);
 
 module.exports = router;

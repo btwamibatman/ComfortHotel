@@ -1,53 +1,61 @@
 
-# Comfort Hotel
+# Comfort Hotel (Microservices Architecture)
 
-A hotel booking system built with Node.js, Express, PostgreSQL, and session-based authentication.
-The project provides a public booking interface together with protected admin and staff functionality for managing hotel reservations.
+An enterprise-grade hotel booking system refactored into a microservices architecture using Node.js, Docker, Nginx, and Terraform. Features high availability, fault isolation, monitoring, and structured incident response.
 
 ## Features
 
-- Session-based authentication with `express-session` and PostgreSQL store
-- Secure password hashing with `bcrypt`
-- Cookie protection with `HttpOnly`, `Secure`, and `SameSite`
-- Role-based authorization for protected actions
-- Full booking CRUD through a web interface
-- Validation for email, phone, dates, and guest count
-- Realistic hotel booking domain model
+- **Microservices Architecture**: Functionality distributed across `app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
+- **Fault-Isolation**: Each microservice uses its own dedicated PostgreSQL database container.
+- **API Gateway**: Nginx routing internal traffic and serving as the primary entry point.
+- **Infrastructure as Code**: Terraform configurations to deploy resources to Azure.
+- **Observability**: Built-in metrics scraping with Prometheus and system dashboards via Grafana.
+- **Role-based Authentication**: Session-based auth via PostgreSQL store (`connect-pg-simple`).
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Runtime | Node.js |
-| Framework | Express.js |
-| Database | PostgreSQL |
-| Session Store | connect-pg-simple |
-| Authentication | express-session + bcrypt |
-| Frontend | HTML, Bootstrap, Vanilla JS |
+| Programming | Node.js, Express.js |
+| Databases | PostgreSQL (5 isolated instances) |
+| Reverse Proxy | Nginx Gateway |
+| Orchestration | Docker & Docker Compose |
+| Infrastructure| Terraform (Azure Provider) |
+| Monitoring    | Prometheus & Grafana |
 
 ## Getting Started
 
-### 1. Install dependencies
+### 1. Prerequisites
+- Docker and Docker Compose installed.
+- (Optional) Terraform CLI / Azure CLI for cloud deployment.
 
+### 2. Environment Variables
+Copy `.env.example` to `.env` and fill in your secrets:
 ```bash
-npm install
+cp .env.example .env
 ```
-Start server
-npm start
 
-### 2. Configure environment variables
+### 3. Launch the Complete Stack
+Start the web app, microservices, databases, and monitoring stack in detached mode:
+```bash
+docker compose up --build -d
+```
 
-Create a `.env` file in the project root:
+### 4. Endpoints
+- **Main Web UI**: `http://localhost` (Port 80)
+- **Grafana Dashboard**: `http://localhost:3001`
+- **Prometheus Metrics**: `http://localhost:9090`
 
-```env
-PORT=3000
-DATABASE_URL=postgres://comforthotel:comforthotel@localhost:5432/comforthotel
-SESSION_SECRET=your_session_secret
-ADMIN_USERNAME=admin
-ADMIN_PASSWORD=your_password
-ADMIN_EMAIL=admin@comforthotel.local
-ADMIN_FULL_NAME=Administrator
-MANAGER_USERNAME=manager
+## Reports & Documentation
+- **[Incident Response & Postmortem (Assignment 4)](docs/INCIDENT_REPORT.md)** 
+- **[Terraform Deployment Guide (Assignment 5)](terraform/DEPLOYMENT.md)**
+- **[Database Fault Isolation Architecture](DOCKER.md)**
+
+## Simulating an Incident
+To test the monitoring stack, you can introduce a simulated database connection failure to the Order Service:
+```bash
+docker compose -f docker-compose.yml -f docker-compose.incident.yml up -d
+```
 MANAGER_PASSWORD=your_password
 MANAGER_EMAIL=manager@comforthotel.local
 MANAGER_FULL_NAME=Hotel Manager
