@@ -21,3 +21,7 @@ build/
 docs/PLAN.md
 docs/MIGRATION_GUIDE.md
 .terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan

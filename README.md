@@ -8,7 +8,7 @@ An enterprise-grade hotel booking system refactored into a microservices archite
 - **Microservices Architecture**: Functionality distributed across `app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
 - **Fault-Isolation**: Each microservice uses its own dedicated PostgreSQL database container.
 - **API Gateway**: Nginx routing internal traffic and serving as the primary entry point.
-- **Infrastructure as Code**: Terraform configurations to deploy resources to Azure.
+- **Infrastructure as Code**: Terraform configurations to deploy resources to Google Cloud.
 - **Observability**: Built-in metrics scraping with Prometheus and system dashboards via Grafana.
 - **Role-based Authentication**: Session-based auth via PostgreSQL store (`connect-pg-simple`).
 
@@ -20,14 +20,14 @@ An enterprise-grade hotel booking system refactored into a microservices archite
 | Databases | PostgreSQL (5 isolated instances) |
 | Reverse Proxy | Nginx Gateway |
 | Orchestration | Docker & Docker Compose |
-| Infrastructure| Terraform (Azure Provider) |
+| Infrastructure| Terraform (Google Cloud Provider) |
 | Monitoring    | Prometheus & Grafana |
 
 ## Getting Started
 
 ### 1. Prerequisites
 - Docker and Docker Compose installed.
-- (Optional) Terraform CLI / Azure CLI for cloud deployment.
+- (Optional) Terraform CLI / Google Cloud CLI for cloud deployment.
 
 ### 2. Environment Variables
 Copy `.env.example` to `.env` and fill in your secrets:
