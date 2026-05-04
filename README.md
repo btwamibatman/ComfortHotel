@@ -1,11 +1,11 @@
-
+﻿
 # Comfort Hotel (Microservices Architecture)
 
 An enterprise-grade hotel booking system refactored into a microservices architecture using Node.js, Docker, Nginx, and Terraform. Features high availability, fault isolation, monitoring, and structured incident response.
 
 ## Features
 
-- **Microservices Architecture**: Functionality distributed across `app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
+- **Microservices Architecture**: Functionality distributed across `main-app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
 - **Fault-Isolation**: Each microservice uses its own dedicated PostgreSQL database container.
 - **API Gateway**: Nginx routing internal traffic and serving as the primary entry point.
 - **Infrastructure as Code**: Terraform configurations to deploy resources to Google Cloud.
@@ -61,9 +61,10 @@ MANAGER_EMAIL=manager@comforthotel.local
 MANAGER_FULL_NAME=Hotel Manager
 ```
 
-### 3. Start the server
+### 3. Start the main app locally
 
 ```bash
+cd services/main-app
 npm start
 ```
 
@@ -111,26 +112,29 @@ The application validates email format, phone format, check-in and check-out dat
 
 ```
 ComfortHotel/
-├── server.js
-├── init-users.js
-├── seed-bookings.js
-├── package.json
-├── .env
-├── database/
-│   └── postgres.js
-├── views/
-│   ├── index.html
-│   ├── admin-login.html
-│   ├── admin-dashboard.html
-│   ├── rooms.html
-│   ├── booking.html
-│   ├── about.html
-│   ├── contact.html
-│   └── 404.html
-└── public/
-    └── style.css
+|-- docker-compose.yml
+|-- docker-compose.*.yml
+|-- Dockerfile.frontend
+|-- database/
+|   `-- init.sql
+|-- docs/
+|-- monitoring/
+|-- nginx/
+|-- scripts/
+|-- services/
+|   |-- main-app/
+|   |   |-- Dockerfile
+|   |   |-- package.json
+|   |   |-- server.js
+|   |   |-- src/
+|   |   |-- views/
+|   |   `-- public/
+|   |-- auth-service/
+|   |-- product-service/
+|   |-- order-service/
+|   `-- chat-service/
+`-- terraform/
 ```
-
 ## Production Notes
 
 Before deploying to production, make sure to:
