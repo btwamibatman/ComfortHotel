@@ -22,6 +22,29 @@ async function findByUsername(username) {
   return mapUser(result.rows[0]);
 }
 
+async function upsertUser(userData) {
+  const result = await query(
+    `INSERT INTO users (username, password, role, email, full_name)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (username) DO UPDATE
+     SET password = EXCLUDED.password,
+         role = EXCLUDED.role,
+         email = EXCLUDED.email,
+         full_name = EXCLUDED.full_name,
+         updated_at = now()
+     RETURNING *`,
+    [
+      userData.username,
+      userData.password,
+      userData.role,
+      userData.email,
+      userData.fullName,
+    ]
+  );
+  return mapUser(result.rows[0]);
+}
+
 module.exports = {
   findByUsername,
+  upsertUser,
 };
