@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const userRepository = require('../repositories/userRepository');
+const config = require('../config/env');
 
 async function login({ username, password, roleRule }) {
   const user = await userRepository.findByUsername(username);
@@ -48,6 +49,33 @@ async function login({ username, password, roleRule }) {
   };
 }
 
+function getConfiguredUsers() {
+  return [
+    { ...config.admin, role: 'admin' },
+    { ...config.manager, role: 'manager' },
+  ].filter((user) => (
+    user.username
+    && user.password
+    && user.email
+    && user.fullName
+  ));
+}
+
+async function initializeConfiguredUsers() {
+  const users = getConfiguredUsers();
+
+  for (const user of users) {
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    await userRepository.upsertUser({
+      ...user,
+      password: hashedPassword,
+    });
+  }
+
+  return users.length;
+}
+
 module.exports = {
+  initializeConfiguredUsers,
   login,
 };
