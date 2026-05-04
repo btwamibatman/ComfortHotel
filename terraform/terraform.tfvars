@@ -9,5 +9,5 @@ ssh_public_key_path = "~/.ssh/id_rsa.pub"
 
 public_source_ranges = ["0.0.0.0/0"]
 
-# Р’С‹ РјРѕР¶РµС‚Рµ СѓРєР°Р·Р°С‚СЊ СЃРІРѕР№ С‚РѕС‡РЅС‹Р№ IP РґР»СЏ Р±РµР·РѕРїР°СЃРЅРѕСЃС‚Рё, СЃРµР№С‡Р°СЃ СЃС‚РѕРёС‚ РґРѕСЃС‚СѓРї РѕС‚РѕРІСЃСЋРґСѓ (0.0.0.0/0)
+# Replace with your public admin IP before applying, for example ["203.0.113.10/32"].
 admin_source_ranges = ["203.0.113.10/32"]

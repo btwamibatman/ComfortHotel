@@ -17,4 +17,14 @@ apt-get update
 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 systemctl enable --now docker
-usermod -aG docker "${admin_username}" || true
+
+for attempt in $(seq 1 30); do
+  if id -u "${admin_username}" >/dev/null 2>&1; then
+    usermod -aG docker "${admin_username}"
+    exit 0
+  fi
+
+  sleep 2
+done
+
+echo "User ${admin_username} was not found after waiting; Docker commands may require sudo." >&2

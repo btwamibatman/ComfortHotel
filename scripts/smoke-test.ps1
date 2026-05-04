@@ -3,10 +3,10 @@ param(
   [string]$BaseUrl = "http://localhost",
   [string]$PrometheusUrl = "http://localhost:9090",
   [string]$GrafanaUrl = "http://localhost:3001",
-  [string]$AdminUsername = "admin",
-  [string]$AdminPassword = "REDACTED_ADMIN_PASSWORD",
-  [string]$ManagerUsername = "manager",
-  [string]$ManagerPassword = "REDACTED_MANAGER_PASSWORD"
+  [string]$AdminUsername = "",
+  [string]$AdminPassword = "",
+  [string]$ManagerUsername = "",
+  [string]$ManagerPassword = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -15,6 +15,58 @@ $script:Failures = 0
 $script:CreatedBookingIds = @()
 $script:CreatedContactIds = @()
 $script:CreatedRoomIds = @()
+
+function Get-DotEnvValue {
+  param([string]$Name)
+
+  $envPath = Join-Path (Get-Location) ".env"
+  if (-not (Test-Path -LiteralPath $envPath)) {
+    return ""
+  }
+
+  $line = Get-Content -LiteralPath $envPath |
+    Where-Object { $_ -match "^\s*$Name\s*=" } |
+    Select-Object -First 1
+
+  if (-not $line) {
+    return ""
+  }
+
+  return (($line -split "=", 2)[1]).Trim().Trim('"').Trim("'")
+}
+
+function Resolve-SmokeSetting {
+  param(
+    [string]$Name,
+    [string]$ProvidedValue,
+    [string]$Fallback = ""
+  )
+
+  if ($ProvidedValue) {
+    return $ProvidedValue
+  }
+
+  $environmentValue = [Environment]::GetEnvironmentVariable($Name)
+  if ($environmentValue) {
+    return $environmentValue
+  }
+
+  $dotEnvValue = Get-DotEnvValue $Name
+  if ($dotEnvValue) {
+    return $dotEnvValue
+  }
+
+  if ($Fallback) {
+    return $Fallback
+  }
+
+  throw "$Name is required. Set it in the environment, .env, or pass it as a script parameter."
+}
+
+$AdminUsername = Resolve-SmokeSetting "ADMIN_USERNAME" $AdminUsername "admin"
+$AdminPassword = Resolve-SmokeSetting "ADMIN_PASSWORD" $AdminPassword
+$ManagerUsername = Resolve-SmokeSetting "MANAGER_USERNAME" $ManagerUsername "manager"
+$ManagerPassword = Resolve-SmokeSetting "MANAGER_PASSWORD" $ManagerPassword
 
 function Write-Check {
   param(
@@ -196,7 +248,7 @@ function Test-DirectAppRoutes {
     ['/auth/admin/login', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ username: 'admin', password: 'REDACTED_ADMIN_PASSWORD' })
+      body: JSON.stringify({ username: 'placeholder-user', password: 'placeholder-password' })
     }, 404],
     ['/api/rooms', {}, 404],
     ['/api/bookings', {}, 404],

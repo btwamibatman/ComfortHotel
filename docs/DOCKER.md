@@ -9,7 +9,7 @@
 1. Make sure `.env` exists in project root.
 2. Ensure at least these vars are set in `.env`:
    - `PORT=3000`
-   - `DATABASE_URL=...`
+   - `DATABASE_URL=...` for non-Docker local runs
    - `SESSION_SECRET=...`
 
 `docker-compose.yml` now uses separate PostgreSQL containers per service, so local `.env` values can still point to `localhost` for non-Docker runs while Docker networking keeps the services isolated.
