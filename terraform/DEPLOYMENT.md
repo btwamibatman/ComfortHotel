@@ -1,60 +1,107 @@
-﻿# ComfortHotel Infrastructure Deployment
+﻿# ComfortHotel GCP Infrastructure Deployment
 
-This document describes how to provision the required infrastructure for the ComfortHotel application using Terraform. The deployment configures an Azure Ubuntu Virtual Machine with necessary networking and security groups.
+This document describes how to provision the required Google Cloud infrastructure for the ComfortHotel application using Terraform.
 
 ## Prerequisites
 
-- **Terraform** CLI installed (v1.0+)
-- **Azure CLI** installed (`az login` completed)
-- **SSH Key Pair** generated (`~/.ssh/id_rsa` and `~/.ssh/id_rsa.pub`)
+- Terraform CLI installed.
+- Google Cloud CLI installed.
+- A Google Cloud project with billing enabled.
+- Compute Engine API enabled.
+- SSH key pair generated, for example `~/.ssh/id_rsa` and `~/.ssh/id_rsa.pub`.
+- Authenticated Google Cloud session:
+  ```bash
+  gcloud auth application-default login
+  ```
 
 ## Infrastructure Architecture
 
-The Terraform configuration provisions:
-1. Virtual Machine (Ubuntu 22.04 LTS).
-2. Dynamic Public IP.
-3. Network Security Group (NSG) with the following open ports:
-   - `80` (HTTP) - Main web entrypoint (Nginx Gateway)
-   - `3000` (Grafana) - Metrics visualization
-   - `9090` (Prometheus) - Metrics scraping and alerting
-   - `22` (SSH) - Administrator access
+Terraform provisions:
 
-> **Note on Grafana Port:** 
-> In `docker-compose.yml`, Grafana might currently be mapped to the host on port `3001` (`3001:3000`). If you wish to access Grafana remotely directly via port `3000`, ensure that `docker-compose.yml` maps Grafana to `3000:3000`. 
+1. Compute Engine VM running Ubuntu 22.04 LTS.
+2. VPC network using `google_compute_network`.
+3. Firewall rules using `google_compute_firewall`.
+4. Static public IP using `google_compute_address`.
+5. Startup script that installs Docker and the Docker Compose plugin.
+
+Open inbound TCP ports:
+
+- `80` - ComfortHotel web entrypoint through Nginx gateway, public.
+- `3001` - Grafana, public. This matches `docker-compose.yml` where Grafana is mapped as `3001:3000`.
+- `22` - SSH access, restricted by `admin_source_ranges`.
+- `9090` - Prometheus, restricted by `admin_source_ranges`.
+
+## Configuration
+
+Update `terraform.tfvars` before applying:
+
+```hcl
+project_id          = "your-gcp-project-id"
+region              = "us-central1"
+zone                = "us-central1-a"
+vm_name             = "comforthotel-vm"
+machine_type        = "e2-micro"
+boot_disk_type      = "pd-standard"
+admin_username      = "gcpuser"
+ssh_public_key_path = "~/.ssh/id_rsa.pub"
+public_source_ranges = ["0.0.0.0/0"]
+admin_source_ranges  = ["203.0.113.10/32"]
+```
+
+The defaults are intentionally conservative for GCP Always Free eligibility:
+
+- `machine_type = "e2-micro"`
+- `boot_disk_type = "pd-standard"`
+- `boot_disk_size_gb = 30`
+- `region = "us-central1"` and `zone = "us-central1-a"`
+
+Always Free eligibility depends on current Google Cloud billing rules and region availability. Check your billing page before applying.
+
+Replace `admin_source_ranges` with your public admin IP range before applying. Avoid leaving SSH and Prometheus open to the internet.
+
+You can get your current public IP with:
+
+```bash
+curl ifconfig.me
+```
 
 ## Deployment Steps
 
-1. **Initialize Terraform:**
-   Initializes the working directory containing Terraform configuration files.
+1. Initialize Terraform:
    ```bash
    terraform init
    ```
 
-2. **Review Deployment Plan:**
-   Creates an execution plan, letting you preview the changes that Terraform plans to make to your infrastructure.
+2. Validate configuration:
+   ```bash
+   terraform validate
+   ```
+
+3. Review the deployment plan:
    ```bash
    terraform plan
    ```
 
-3. **Apply Configuration:**
-   Executes the actions proposed in a Terraform plan.
+4. Apply the configuration:
    ```bash
    terraform apply
    ```
-   *Type `yes` when prompted to confirm.*
 
-4. **Verify Outputs:**
-   After a successful apply, Terraform will print the public IP of the newly created server. 
+5. Use the outputs:
    ```bash
-   Outputs:
-   public_ip_address = "203.0.113.50"
+   terraform output
    ```
 
-## Post-Deployment 
+## Post-Deployment
 
-Once the infrastructure is up, connect to the server via SSH using the outputted IP address:
+Connect to the server:
+
 ```bash
-ssh azureuser@<public_ip_address>
+ssh gcpuser@<public_ip_address>
 ```
 
-You can then clone your GitHub repository and run `docker compose up -d` to launch the ComfortHotel application.
+The startup script installs Docker. After connecting, clone the repository, configure `.env`, and run:
+
+```bash
+docker compose up --build -d
+```
