@@ -1,141 +1,84 @@
 ﻿terraform {
   required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 3.0"
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.0"
     }
   }
 }
 
-provider "azurerm" {
-  skip_provider_registration = true
-  features {}
+provider "google" {
+  project = var.project_id
+  region  = var.region
+  zone    = var.zone
 }
 
-resource "azurerm_resource_group" "rg" {
-  name     = var.resource_group_name
-  location = var.location
+locals {
+  instance_tags = ["comforthotel-vm"]
 }
 
-resource "azurerm_virtual_network" "vnet" {
-  name                = "${var.vm_name}-vnet"
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+resource "google_compute_address" "static_ip" {
+  name   = "${var.vm_name}-ip"
+  region = var.region
 }
 
-resource "azurerm_subnet" "subnet" {
-  name                 = "internal"
-  resource_group_name  = azurerm_resource_group.rg.name
-  virtual_network_name = azurerm_virtual_network.vnet.name
-  address_prefixes     = ["10.0.2.0/24"]
+resource "google_compute_network" "network" {
+  name                    = "${var.vm_name}-network"
+  auto_create_subnetworks = true
 }
 
-resource "azurerm_public_ip" "public_ip" {
-  name                = "${var.vm_name}-pip"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Static"
-  sku                 = "Standard"
-}
+resource "google_compute_firewall" "allow_public_web" {
+  name          = "${var.vm_name}-allow-public-web"
+  network       = google_compute_network.network.name
+  direction     = "INGRESS"
+  source_ranges = var.public_source_ranges
+  target_tags   = local.instance_tags
 
-resource "azurerm_network_security_group" "nsg" {
-  name                = "${var.vm_name}-nsg"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
-
-  security_rule {
-    name                       = "SSH"
-    priority                   = 1001
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "HTTP"
-    priority                   = 1002
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "80"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Grafana"
-    priority                   = 1003
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "3000"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "Prometheus"
-    priority                   = 1004
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "9090"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "3001"]
   }
 }
 
-resource "azurerm_network_interface" "nic" {
-  name                = "${var.vm_name}-nic"
-  location            = azurerm_resource_group.rg.location
-  resource_group_name = azurerm_resource_group.rg.name
+resource "google_compute_firewall" "allow_admin_access" {
+  name          = "${var.vm_name}-allow-admin-access"
+  network       = google_compute_network.network.name
+  direction     = "INGRESS"
+  source_ranges = var.admin_source_ranges
+  target_tags   = local.instance_tags
 
-  ip_configuration {
-    name                          = "internal"
-    subnet_id                     = azurerm_subnet.subnet.id
-    private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.public_ip.id
+  allow {
+    protocol = "tcp"
+    ports    = ["22", "9090"]
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "nic_nsg" {
-  network_interface_id      = azurerm_network_interface.nic.id
-  network_security_group_id = azurerm_network_security_group.nsg.id
-}
+resource "google_compute_instance" "vm" {
+  name         = var.vm_name
+  machine_type = var.machine_type
+  zone         = var.zone
+  tags         = local.instance_tags
 
-resource "azurerm_linux_virtual_machine" "vm" {
-  name                = var.vm_name
-  resource_group_name = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  size                = var.vm_size
-  admin_username      = var.admin_username
+  boot_disk {
+    auto_delete = false
 
-  network_interface_ids = [
-    azurerm_network_interface.nic.id,
-  ]
-
-  admin_ssh_key {
-    username   = var.admin_username
-    public_key = file(var.ssh_public_key_path)
+    initialize_params {
+      image = var.image
+      size  = var.boot_disk_size_gb
+      type  = var.boot_disk_type
+    }
   }
 
-  os_disk {
-    caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+  network_interface {
+    network = google_compute_network.network.self_link
+
+    access_config {
+      nat_ip = google_compute_address.static_ip.address
+    }
   }
 
-  source_image_reference {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
+  metadata = {
+    ssh-keys       = "${var.admin_username}:${file(pathexpand(var.ssh_public_key_path))}"
+    startup-script = templatefile("${path.module}/startup.sh", { admin_username = var.admin_username })
   }
 }

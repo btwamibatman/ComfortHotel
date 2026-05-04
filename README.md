@@ -5,10 +5,10 @@ An enterprise-grade hotel booking system refactored into a microservices archite
 
 ## Features
 
-- **Microservices Architecture**: Functionality distributed across `app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
+- **Microservices Architecture**: Functionality distributed across `main-app`, `auth-service`, `order-service`, `product-service`, and `chat-service`.
 - **Fault-Isolation**: Each microservice uses its own dedicated PostgreSQL database container.
 - **API Gateway**: Nginx routing internal traffic and serving as the primary entry point.
-- **Infrastructure as Code**: Terraform configurations to deploy resources to Azure.
+- **Infrastructure as Code**: Terraform configurations to deploy resources to Google Cloud.
 - **Observability**: Built-in metrics scraping with Prometheus and system dashboards via Grafana.
 - **Role-based Authentication**: Session-based auth via PostgreSQL store (`connect-pg-simple`).
 
@@ -20,14 +20,14 @@ An enterprise-grade hotel booking system refactored into a microservices archite
 | Databases | PostgreSQL (5 isolated instances) |
 | Reverse Proxy | Nginx Gateway |
 | Orchestration | Docker & Docker Compose |
-| Infrastructure| Terraform (Azure Provider) |
+| Infrastructure| Terraform (Google Cloud Provider) |
 | Monitoring    | Prometheus & Grafana |
 
 ## Getting Started
 
 ### 1. Prerequisites
 - Docker and Docker Compose installed.
-- (Optional) Terraform CLI / Azure CLI for cloud deployment.
+- (Optional) Terraform CLI / Google Cloud CLI for cloud deployment.
 
 ### 2. Environment Variables
 Copy `.env.example` to `.env` and fill in your secrets:
@@ -61,9 +61,10 @@ MANAGER_EMAIL=manager@comforthotel.local
 MANAGER_FULL_NAME=Hotel Manager
 ```
 
-### 3. Start the server
+### 3. Start the main app locally
 
 ```bash
+cd services/main-app
 npm start
 ```
 
@@ -111,26 +112,29 @@ The application validates email format, phone format, check-in and check-out dat
 
 ```
 ComfortHotel/
-в”њв”Ђв”Ђ server.js
-в”њв”Ђв”Ђ init-users.js
-в”њв”Ђв”Ђ seed-bookings.js
-в”њв”Ђв”Ђ package.json
-в”њв”Ђв”Ђ .env
-в”њв”Ђв”Ђ database/
-в”‚   в””в”Ђв”Ђ postgres.js
-в”њв”Ђв”Ђ views/
-в”‚   в”њв”Ђв”Ђ index.html
-в”‚   в”њв”Ђв”Ђ admin-login.html
-в”‚   в”њв”Ђв”Ђ admin-dashboard.html
-в”‚   в”њв”Ђв”Ђ rooms.html
-в”‚   в”њв”Ђв”Ђ booking.html
-в”‚   в”њв”Ђв”Ђ about.html
-в”‚   в”њв”Ђв”Ђ contact.html
-в”‚   в””в”Ђв”Ђ 404.html
-в””в”Ђв”Ђ public/
-    в””в”Ђв”Ђ style.css
+|-- docker-compose.yml
+|-- docker-compose.*.yml
+|-- Dockerfile.frontend
+|-- database/
+|   `-- init.sql
+|-- docs/
+|-- monitoring/
+|-- nginx/
+|-- scripts/
+|-- services/
+|   |-- main-app/
+|   |   |-- Dockerfile
+|   |   |-- package.json
+|   |   |-- server.js
+|   |   |-- src/
+|   |   |-- views/
+|   |   `-- public/
+|   |-- auth-service/
+|   |-- product-service/
+|   |-- order-service/
+|   `-- chat-service/
+`-- terraform/
 ```
-
 ## Production Notes
 
 Before deploying to production, make sure to:

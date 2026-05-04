@@ -12,8 +12,8 @@
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_app"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   postgres-product:
@@ -29,8 +29,8 @@
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_product"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   postgres-order:
@@ -46,8 +46,8 @@
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_order"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   postgres-chat:
@@ -63,8 +63,8 @@
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U comforthotel -d comforthotel_chat"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   product-service:
@@ -84,8 +84,8 @@
       - "3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   order-service:
@@ -108,8 +108,8 @@
       - "3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   chat-service:
@@ -129,8 +129,8 @@
       - "3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   auth-service:
@@ -145,6 +145,14 @@
       DATABASE_URL: postgres://comforthotel:${DB_PASSWORD:?DB_PASSWORD is required}@postgres-app:5432/comforthotel_app
       SESSION_SECRET: ${SESSION_SECRET}
       SESSION_TTL_SECONDS: ${SESSION_TTL_SECONDS:-86400}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_FULL_NAME: ${ADMIN_FULL_NAME}
+      MANAGER_USERNAME: ${MANAGER_USERNAME}
+      MANAGER_PASSWORD: ${MANAGER_PASSWORD}
+      MANAGER_EMAIL: ${MANAGER_EMAIL}
+      MANAGER_FULL_NAME: ${MANAGER_FULL_NAME}
     depends_on:
       postgres-app:
         condition: service_healthy
@@ -152,14 +160,14 @@
       - "3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   app:
     build:
-      context: .
-      dockerfile: Dockerfile.backend
+      context: ./services/main-app
+      dockerfile: Dockerfile
     container_name: comforthotel-app
     restart: unless-stopped
     environment:
@@ -193,8 +201,8 @@
       - "3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
-      interval: 10s
-      timeout: 5s
+      interval: 30s
+      timeout: 15s
       retries: 10
 
   gateway:
