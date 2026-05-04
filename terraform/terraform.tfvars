@@ -1,4 +1,4 @@
-project_id          = "your-gcp-project-id"
+project_id          = "project-13c4c153-d486-46fd-823"
 region              = "us-central1"
 zone                = "us-central1-a"
 vm_name             = "comforthotel-vm"
@@ -9,5 +9,5 @@ ssh_public_key_path = "~/.ssh/id_rsa.pub"
 
 public_source_ranges = ["0.0.0.0/0"]
 
-# Replace with your public admin IP before applying, for example ["203.0.113.10/32"].
-admin_source_ranges = ["203.0.113.10/32"]
+# Вы можете указать свой точный IP для безопасности, сейчас стоит доступ отовсюду (0.0.0.0/0)
+admin_source_ranges = ["0.0.0.0/0"]
