@@ -40,7 +40,7 @@ project_id          = "your-gcp-project-id"
 region              = "us-central1"
 zone                = "us-central1-a"
 vm_name             = "comforthotel-vm"
-machine_type        = "e2-micro"
+machine_type        = "e2-medium"
 boot_disk_type      = "pd-standard"
 admin_username      = "gcpuser"
 ssh_public_key_path = "~/.ssh/id_rsa.pub"
@@ -48,7 +48,9 @@ public_source_ranges = ["0.0.0.0/0"]
 admin_source_ranges  = ["203.0.113.10/32"]
 ```
 
-The defaults are intentionally conservative for GCP Always Free eligibility:
+The checked-in `terraform.tfvars` uses `e2-medium`, which is better suited for running the full Docker Compose stack but is not part of the Always Free VM shape.
+
+The variable defaults are intentionally conservative for GCP Always Free eligibility:
 
 - `machine_type = "e2-micro"`
 - `boot_disk_type = "pd-standard"`

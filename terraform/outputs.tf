@@ -1,4 +1,4 @@
-﻿output "public_ip_address" {
+output "public_ip_address" {
   description = "Static public IP address assigned to the Compute Engine VM"
   value       = google_compute_address.static_ip.address
 }

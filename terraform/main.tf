@@ -1,4 +1,4 @@
-﻿terraform {
+terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -54,10 +54,11 @@ resource "google_compute_firewall" "allow_admin_access" {
 }
 
 resource "google_compute_instance" "vm" {
-  name         = var.vm_name
-  machine_type = var.machine_type
-  zone         = var.zone
-  tags         = local.instance_tags
+  name                      = var.vm_name
+  machine_type              = var.machine_type
+  zone                      = var.zone
+  allow_stopping_for_update = true
+  tags                      = local.instance_tags
 
   boot_disk {
     auto_delete = false
