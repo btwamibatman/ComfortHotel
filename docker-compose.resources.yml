@@ -1,0 +1,54 @@
+# Optional resource profile for vertical scaling tests.
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.resources.yml up -d
+
+services:
+  order-service:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.50"
+          memory: 256M
+        limits:
+          cpus: "1.50"
+          memory: 768M
+
+  product-service:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+        limits:
+          cpus: "1.00"
+          memory: 512M
+
+  auth-service:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+        limits:
+          cpus: "1.00"
+          memory: 512M
+
+  chat-service:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.25"
+          memory: 128M
+        limits:
+          cpus: "0.75"
+          memory: 384M
+
+  postgres-order:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.50"
+          memory: 512M
+        limits:
+          cpus: "1.50"
+          memory: 1G

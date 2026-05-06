@@ -25,3 +25,13 @@ docs/MIGRATION_GUIDE.md
 *.tfstate.*
 *.tfplan
 tfplan
+docker-stack.generated.yml
+docs/work_with_server.md
+docs/Abdigalym_Khamza_Assignment 6-1.pdf
+
+# Monitoring evidence screenshots
+monitoring/evidence/*.png
+monitoring/evidence/*.jpg
+monitoring/evidence/*.jpeg
+monitoring/evidence/*.gif
+monitoring/evidence/*.webp

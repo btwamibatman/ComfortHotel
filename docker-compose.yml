@@ -236,6 +236,55 @@
       - "9090:9090"
     depends_on:
       - app
+      - cadvisor
+      - docker-metrics-exporter
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager:latest
+    container_name: comforthotel-alertmanager
+    restart: unless-stopped
+    entrypoint:
+      - "sh"
+      - "/etc/alertmanager/start-alertmanager.sh"
+    environment:
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL:?SLACK_WEBHOOK_URL is required for Alertmanager}
+      SLACK_CHANNEL: ${SLACK_CHANNEL:-#alerts}
+      SMTP_SMARTHOST: ${SMTP_SMARTHOST:?SMTP_SMARTHOST is required for Alertmanager}
+      SMTP_FROM: ${SMTP_FROM:?SMTP_FROM is required for Alertmanager}
+      SMTP_AUTH_USERNAME: ${SMTP_AUTH_USERNAME:?SMTP_AUTH_USERNAME is required for Alertmanager}
+      SMTP_AUTH_PASSWORD: ${SMTP_AUTH_PASSWORD:?SMTP_AUTH_PASSWORD is required for Alertmanager}
+      ALERT_EMAIL_TO: ${ALERT_EMAIL_TO:?ALERT_EMAIL_TO is required for Alertmanager}
+    volumes:
+      - ./monitoring/alertmanager/start-alertmanager.sh:/etc/alertmanager/start-alertmanager.sh:ro
+    ports:
+      - "9093:9093"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: comforthotel-cadvisor
+    restart: unless-stopped
+    privileged: true
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+
+  docker-metrics-exporter:
+    build:
+      context: ./services/docker-metrics-exporter
+    container_name: comforthotel-docker-metrics-exporter
+    restart: unless-stopped
+    environment:
+      PORT: 9100
+      PROJECT_FILTER: comforthotel
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    expose:
+      - "9100"
 
   grafana:
     image: grafana/grafana:latest

@@ -1,0 +1,7 @@
+# Example vertical scaling values for a higher-load environment.
+# Usage:
+#   terraform apply -var-file="scaling.tfvars.example"
+
+machine_type      = "e2-standard-2"
+boot_disk_size_gb = 50
+boot_disk_type    = "pd-balanced"
