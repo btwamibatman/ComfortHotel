@@ -48,6 +48,8 @@ docker compose up --build -d
 
 ## Reports & Documentation
 - **[Incident Response & Postmortem (Assignment 4)](docs/INCIDENT_REPORT.md)** 
+- **[Prometheus Alerts & Log Troubleshooting Automation](docs/ASSIGNMENT_MONITORING_LOGS.md)**
+- **[Resource Usage Analysis & Scaling Strategy](docs/ASSIGNMENT_5_RESOURCE_USAGE_AND_SCALING.md)**
 - **[Terraform Deployment Guide (Assignment 5)](terraform/DEPLOYMENT.md)**
 - **[Database Fault Isolation Architecture](DOCKER.md)**
 

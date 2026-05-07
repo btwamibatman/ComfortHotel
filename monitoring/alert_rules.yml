@@ -1,26 +1,53 @@
-﻿groups:
+groups:
   - name: comforthotel-alerts
     rules:
-      - alert: BackendHighErrorRateWarning
+      - alert: ServiceHighErrorRateWarning
         expr: |
           100 * (
-            sum(rate(http_requests_total{status_code=~"5.."}[5m])) /
-            clamp_min(sum(rate(http_requests_total[5m])), 0.001)
+            sum by (job) (
+              rate({__name__=~"http_requests_total|product_service_http_requests_total|order_service_http_requests_total|chat_service_http_requests_total|auth_service_http_requests_total", status_code=~"5.."}[5m])
+            ) /
+            clamp_min(
+              sum by (job) (
+                rate({__name__=~"http_requests_total|product_service_http_requests_total|order_service_http_requests_total|chat_service_http_requests_total|auth_service_http_requests_total"}[5m])
+              ),
+              0.001
+            )
           ) > 5
         for: 1m
         labels:
           severity: warning
-          service: backend
         annotations:
-          summary: "Backend error rate is high"
-          description: "5xx error rate is above 5% for more than 1 minute."
+          summary: "High 5xx error rate on {{ $labels.job }}"
+          description: "{{ $labels.job }} has more than 5% HTTP 5xx responses for over 1 minute."
 
-      - alert: BackendDownCritical
-        expr: up{job="backend"} == 0
+      - alert: ServiceDownCritical
+        expr: up{job=~"backend|product-service|order-service|chat-service|auth-service"} == 0
         for: 30s
         labels:
           severity: critical
-          service: backend
         annotations:
-          summary: "Backend is down"
-          description: "Prometheus cannot scrape the backend target for at least 30 seconds."
+          summary: "{{ $labels.job }} is down"
+          description: "Prometheus cannot scrape {{ $labels.job }} at {{ $labels.instance }} for at least 30 seconds."
+
+      - alert: ServiceMetricsMissingWarning
+        expr: absent(up{job=~"backend|product-service|order-service|chat-service|auth-service"})
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Service metrics are missing"
+          description: "Prometheus has no active ComfortHotel service targets. Check prometheus.yml and Docker networking."
+
+      - alert: ServiceCpuScalingCandidate
+        expr: |
+          sum by (job) (
+            rate({__name__=~".*process_cpu_seconds_total", job=~"backend|product-service|order-service|chat-service|auth-service"}[5m])
+          ) > 0.8
+        for: 3m
+        labels:
+          severity: warning
+          action: scale-up-review
+        annotations:
+          summary: "{{ $labels.job }} is a scaling candidate"
+          description: "{{ $labels.job }} uses more than 0.8 CPU cores for over 3 minutes. Review RPS, error rate, and replicas before scaling."

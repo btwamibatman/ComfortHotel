@@ -1,0 +1,56 @@
+# Swarm overlay for horizontal scaling.
+# Build images first with docker compose build, then deploy:
+#   docker swarm init
+#   docker compose -f docker-compose.yml -f docker-compose.swarm-scale.yml config > docker-stack.generated.yml
+#   docker stack deploy --resolve-image never -c docker-stack.generated.yml comforthotel
+
+services:
+  app:
+    image: comforthotel-app:local
+
+  order-service:
+    image: comforthotel-order-service:local
+    container_name: !reset null
+    deploy:
+      replicas: 3
+      update_config:
+        parallelism: 1
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+      resources:
+        reservations:
+          cpus: "0.50"
+          memory: 256M
+        limits:
+          cpus: "1.50"
+          memory: 768M
+
+  product-service:
+    image: comforthotel-product-service:local
+    container_name: !reset null
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  auth-service:
+    image: comforthotel-auth-service:local
+    container_name: !reset null
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  chat-service:
+    image: comforthotel-chat-service:local
+
+  gateway:
+    image: comforthotel-gateway:local
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+
+  docker-metrics-exporter:
+    image: comforthotel-docker-metrics-exporter:local
