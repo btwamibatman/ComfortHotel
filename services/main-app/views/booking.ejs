@@ -1,92 +1,126 @@
-﻿<%- include('partials/head', { title: 'Comfort Hotel - Book a Room' }) %>
+<%- include('partials/head', { title: 'Comfort Hotel - Book a Room' }) %>
 <%- include('partials/navbar', { activePage: 'booking' }) %>
 
-<main class="container py-5">
-  <div class="row">
-    <div class="col-md-8 mx-auto">
-      <h2 class="mb-4">Book Your Room</h2>
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <div class="eyebrow">Booking</div>
+      <h1 class="page-title text-white">Reserve your stay</h1>
+      <p>Choose your dates, room type, and guest details. The booking request will use the existing reservation API.</p>
+    </div>
+  </section>
 
-      <div class="card">
-        <div class="card-body">
-          <form id="bookingForm">
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="roomName" class="form-label">Room Name/Number</label>
-                <input type="text" class="form-control" id="roomName" name="roomName" required placeholder="e.g., Deluxe Suite 201">
-              </div>
-              <div class="col-md-6">
-                <label for="roomType" class="form-label">Room Type</label>
-                <select class="form-control" id="roomType" name="roomType" required>
-                  <option value="">Select Room Type</option>
-                  <% rooms.forEach(room => { %>
-                    <option value="<%= room.type %>"><%= room.name %></option>
-                  <% }); %>
-                </select>
-              </div>
+  <section class="page-content">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="hotel-card p-4 p-md-5">
+            <div class="mb-4">
+              <div class="eyebrow">Secure Booking</div>
+              <h2 class="h1 mb-2">Book Your Room</h2>
+              <p class="hotel-muted mb-0">Complete the form below and receive an instant booking reference.</p>
             </div>
 
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="checkInDate" class="form-label">Check-in Date</label>
-                <input type="date" class="form-control" id="checkInDate" name="checkInDate" required>
-              </div>
-              <div class="col-md-6">
-                <label for="checkOutDate" class="form-label">Check-out Date</label>
-                <input type="date" class="form-control" id="checkOutDate" name="checkOutDate" required>
-              </div>
+            <div id="offerNotice" class="offer-note mb-4" style="display: none;">
+              Save up to 20% offer selected. Promotional details can be confirmed by hotel staff after booking.
             </div>
 
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="numberOfGuests" class="form-label">Number of Guests</label>
-                <input type="number" class="form-control" id="numberOfGuests" name="numberOfGuests" min="1" max="10" required>
+            <form id="bookingForm" class="site-form">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="roomName" class="form-label">Room Name/Number</label>
+                  <input type="text" class="form-control" id="roomName" name="roomName" required placeholder="e.g., Deluxe Suite 201">
+                </div>
+                <div class="col-md-6">
+                  <label for="roomType" class="form-label">Room Type</label>
+                  <select class="form-select" id="roomType" name="roomType" required>
+                    <option value="">Select Room Type</option>
+                    <% rooms.forEach(room => { %>
+                      <option value="<%= room.type %>"><%= room.name %></option>
+                    <% }); %>
+                  </select>
+                </div>
               </div>
-              <div class="col-md-6">
-                <label for="totalPrice" class="form-label">Total Price (USD)</label>
-                <input type="number" class="form-control" id="totalPrice" name="totalPrice" step="0.01" min="0" required readonly>
-                <small class="text-muted">Price will be calculated automatically</small>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="checkInDate" class="form-label">Check-in Date</label>
+                  <input type="date" class="form-control" id="checkInDate" name="checkInDate" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="checkOutDate" class="form-label">Check-out Date</label>
+                  <input type="date" class="form-control" id="checkOutDate" name="checkOutDate" required>
+                </div>
               </div>
-            </div>
 
-            <hr>
-
-            <h5 class="mb-3">Guest Information</h5>
-
-            <div class="row mb-3">
-              <div class="col-md-6">
-                <label for="guestName" class="form-label">Full Name</label>
-                <input type="text" class="form-control" id="guestName" name="guestName" required>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="numberOfGuests" class="form-label">Number of Guests</label>
+                  <input type="number" class="form-control" id="numberOfGuests" name="numberOfGuests" min="1" max="10" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="totalPrice" class="form-label">Total Price (USD)</label>
+                  <input type="number" class="form-control" id="totalPrice" name="totalPrice" step="0.01" min="0" required readonly>
+                  <small class="text-muted">Price is calculated automatically from room, dates, and guests.</small>
+                </div>
               </div>
-              <div class="col-md-6">
-                <label for="guestEmail" class="form-label">Email</label>
-                <input type="email" class="form-control" id="guestEmail" name="guestEmail" required>
+
+              <hr class="my-4">
+
+              <h3 class="h4 mb-3">Guest Information</h3>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="guestName" class="form-label">Full Name</label>
+                  <input type="text" class="form-control" id="guestName" name="guestName" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="guestEmail" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="guestEmail" name="guestEmail" required>
+                </div>
               </div>
-            </div>
 
-            <div class="mb-3">
-              <label for="guestPhone" class="form-label">Phone Number</label>
-              <input type="tel" class="form-control" id="guestPhone" name="guestPhone" placeholder="+7 777 777 77 77">
-            </div>
+              <div class="mb-3">
+                <label for="guestPhone" class="form-label">Phone Number</label>
+                <input type="tel" class="form-control" id="guestPhone" name="guestPhone" placeholder="+7 777 777 77 77">
+              </div>
 
-            <div class="mb-3">
-              <label for="specialRequests" class="form-label">Special Requests</label>
-              <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3" placeholder="Any special requests or preferences..."></textarea>
-            </div>
+              <div class="mb-3">
+                <label for="specialRequests" class="form-label">Special Requests</label>
+                <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3" placeholder="Any special requests or preferences..."></textarea>
+              </div>
 
-            <div id="bookingResult" class="alert" style="display: none;"></div>
+              <div id="bookingResult" class="alert" style="display: none;"></div>
 
-            <button type="submit" class="btn btn-danger btn-lg w-100">Confirm Booking</button>
-          </form>
+              <button type="submit" class="btn-gold w-100">Confirm Booking</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-lg-4">
+          <aside class="booking-aside">
+            <div class="eyebrow">Comfort Hotel</div>
+            <h2 class="h3">Simple booking, premium stay</h2>
+            <p>We keep the reservation process clear and secure while giving you the room comfort expected from a luxury hotel.</p>
+            <ul class="mb-4">
+              <li>Best Price Guarantee</li>
+              <li>Free Cancellation</li>
+              <li>Secure Booking</li>
+              <li>No Hidden Fees</li>
+            </ul>
+            <a href="/rooms" class="btn-outline-gold">Explore Rooms</a>
+          </aside>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </main>
 
 <%- include('partials/footer') %>
 
 <script>
-const roomPrices = JSON.parse('<%- JSON.stringify(rooms.reduce((acc, room) => ({ ...acc, [room.type]: room.price }), {})) %>');
+const roomPrices = <%- JSON.stringify(rooms.reduce((acc, room) => ({ ...acc, [room.type]: room.price }), {})) %>;
+const roomNames = <%- JSON.stringify(rooms.reduce((acc, room) => ({ ...acc, [room.type]: room.name }), {})) %>;
 
 $(document).ready(function() {
   loadCurrency();
@@ -98,20 +132,44 @@ $(document).ready(function() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomType = urlParams.get('roomType');
   const roomName = urlParams.get('roomName');
+  const checkIn = urlParams.get('checkIn') || urlParams.get('checkInDate');
+  const checkOut = urlParams.get('checkOut') || urlParams.get('checkOutDate');
+  const guests = urlParams.get('guests') || urlParams.get('numberOfGuests');
+  const offer = urlParams.get('offer');
 
   if (roomType) {
     $('#roomType').val(roomType);
   }
   if (roomName) {
     $('#roomName').val(roomName);
+  } else if (roomType && roomNames[roomType]) {
+    $('#roomName').val(roomNames[roomType]);
+  }
+  if (checkIn) {
+    $('#checkInDate').val(checkIn);
+  }
+  if (checkOut) {
+    $('#checkOutDate').val(checkOut);
+  }
+  if (guests) {
+    $('#numberOfGuests').val(guests);
+  }
+  if (offer) {
+    $('#offerNotice').show();
   }
 
-  $('#roomType, #checkInDate, #checkOutDate, #numberOfGuests').on('change', calculatePrice);
+  $('#roomType').on('change', function() {
+    const selectedType = $(this).val();
+    if (selectedType && roomNames[selectedType] && !$('#roomName').val()) {
+      $('#roomName').val(roomNames[selectedType]);
+    }
+    calculatePrice();
+  });
+
+  $('#checkInDate, #checkOutDate, #numberOfGuests').on('change', calculatePrice);
   $('#bookingForm').on('submit', handleBookingSubmit);
 
-  if (roomType) {
-    calculatePrice();
-  }
+  calculatePrice();
 });
 
 function calculatePrice() {
