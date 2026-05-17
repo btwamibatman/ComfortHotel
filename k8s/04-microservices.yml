@@ -1,0 +1,479 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service
+  namespace: comforthotel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: product-service
+  template:
+    metadata:
+      labels:
+        app: product-service
+        tier: backend
+    spec:
+      containers:
+        - name: product-service
+          image: comforthotel-product-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: NODE_ENV
+            - name: SERVICE_NAME
+              value: product-service
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PORT
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: postgres://comforthotel:$(DB_PASSWORD)@postgres-product:5432/comforthotel_product
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service
+  namespace: comforthotel
+spec:
+  selector:
+    app: product-service
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-service
+  namespace: comforthotel
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-service
+  template:
+    metadata:
+      labels:
+        app: order-service
+        tier: backend
+    spec:
+      containers:
+        - name: order-service
+          image: comforthotel-order-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: NODE_ENV
+            - name: SERVICE_NAME
+              value: order-service
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PORT
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: postgres://comforthotel:$(DB_PASSWORD)@postgres-order:5432/comforthotel_order
+            - name: PRODUCT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PRODUCT_SERVICE_URL
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 1000m
+              memory: 768Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service
+  namespace: comforthotel
+spec:
+  selector:
+    app: order-service
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-service
+  namespace: comforthotel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-service
+  template:
+    metadata:
+      labels:
+        app: auth-service
+        tier: backend
+    spec:
+      containers:
+        - name: auth-service
+          image: comforthotel-auth-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: NODE_ENV
+            - name: SERVICE_NAME
+              value: auth-service
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PORT
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: postgres://comforthotel:$(DB_PASSWORD)@postgres-app:5432/comforthotel_app
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: SESSION_SECRET
+            - name: SESSION_TTL_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: SESSION_TTL_SECONDS
+            - name: ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: ADMIN_USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: ADMIN_PASSWORD
+            - name: ADMIN_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: ADMIN_EMAIL
+            - name: ADMIN_FULL_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: ADMIN_FULL_NAME
+            - name: MANAGER_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: MANAGER_USERNAME
+            - name: MANAGER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: MANAGER_PASSWORD
+            - name: MANAGER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: MANAGER_EMAIL
+            - name: MANAGER_FULL_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: MANAGER_FULL_NAME
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service
+  namespace: comforthotel
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chat-service
+  namespace: comforthotel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: chat-service
+  template:
+    metadata:
+      labels:
+        app: chat-service
+        tier: backend
+    spec:
+      containers:
+        - name: chat-service
+          image: comforthotel-chat-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: NODE_ENV
+            - name: SERVICE_NAME
+              value: chat-service
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PORT
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: postgres://comforthotel:$(DB_PASSWORD)@postgres-chat:5432/comforthotel_chat
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: chat-service
+  namespace: comforthotel
+spec:
+  selector:
+    app: chat-service
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: comforthotel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app
+  template:
+    metadata:
+      labels:
+        app: app
+        tier: frontend
+    spec:
+      containers:
+        - name: app
+          image: comforthotel-app:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: NODE_ENV
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PORT
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: DB_PASSWORD
+            - name: DATABASE_URL
+              value: postgres://comforthotel:$(DB_PASSWORD)@postgres-app:5432/comforthotel_app
+            - name: PRODUCT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PRODUCT_SERVICE_URL
+            - name: CHAT_SERVICE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: CHAT_SERVICE_URL
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: SESSION_SECRET
+            - name: SESSION_TTL_SECONDS
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: SESSION_TTL_SECONDS
+            - name: ADMIN_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: ADMIN_USERNAME
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: ADMIN_PASSWORD
+            - name: ADMIN_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: ADMIN_EMAIL
+            - name: ADMIN_FULL_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: ADMIN_FULL_NAME
+            - name: MANAGER_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: MANAGER_USERNAME
+            - name: MANAGER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: MANAGER_PASSWORD
+            - name: MANAGER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: MANAGER_EMAIL
+            - name: MANAGER_FULL_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: MANAGER_FULL_NAME
+            - name: USER_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: USER_USERNAME
+            - name: USER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: comforthotel-secrets
+                  key: USER_PASSWORD
+            - name: USER_EMAIL
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: USER_EMAIL
+            - name: USER_FULL_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: USER_FULL_NAME
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app
+  namespace: comforthotel
+spec:
+  selector:
+    app: app
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
