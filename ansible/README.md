@@ -29,6 +29,24 @@ Edit `ansible/group_vars/all.yml` before running in a real environment. Replace 
 
 By default, `deploy-compose.yml` copies the local project files needed by `docker-compose.yml` to `/opt/comforthotel`.
 
+## HTTPS with Let's Encrypt
+
+Let's Encrypt is enabled only when `enable_https` is set to `true`. Before running the playbook:
+
+- point your domain DNS `A` record to the server public IP;
+- open ports `80` and `443` in the cloud firewall/security group;
+- set the domain and certificate email in `ansible/group_vars/all.yml`.
+
+Example:
+
+```yaml
+enable_https: true
+app_domain: hotel.example.com
+letsencrypt_email: admin@example.com
+```
+
+The deployment first starts the HTTP gateway for the ACME challenge, requests a free Let's Encrypt certificate with Certbot, then starts the stack with `docker-compose.https.yml`. Certbot's system timer renews the certificate automatically, and a deploy hook reloads the nginx gateway after renewal.
+
 If you prefer deployment from Git, set:
 
 ```yaml
