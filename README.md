@@ -1,7 +1,7 @@
 ﻿
 # Comfort Hotel (Microservices Architecture)
 
-An enterprise-grade hotel booking system refactored into a microservices architecture using Node.js, Docker, Nginx, and Terraform. Features high availability, fault isolation, monitoring, and structured incident response.
+An enterprise-grade hotel booking system refactored into a microservices architecture using Node.js, Docker, Nginx, Terraform, Ansible, and Kubernetes. Features high availability, fault isolation, monitoring, and structured incident response.
 
 ## Features
 
@@ -9,6 +9,8 @@ An enterprise-grade hotel booking system refactored into a microservices archite
 - **Fault-Isolation**: Each microservice uses its own dedicated PostgreSQL database container.
 - **API Gateway**: Nginx routing internal traffic and serving as the primary entry point.
 - **Infrastructure as Code**: Terraform configurations to deploy resources to Google Cloud.
+- **Server Automation**: Ansible playbooks for Terraform-created VM setup and Docker Compose deployment.
+- **Kubernetes Manifests**: Kubernetes Deployments, Services, ConfigMaps, Secrets, StatefulSets, and HPA for the core stack.
 - **Observability**: Built-in metrics scraping with Prometheus and system dashboards via Grafana.
 - **Role-based Authentication**: Session-based auth via PostgreSQL store (`connect-pg-simple`).
 
@@ -19,8 +21,8 @@ An enterprise-grade hotel booking system refactored into a microservices archite
 | Programming | Node.js, Express.js |
 | Databases | PostgreSQL (5 isolated instances) |
 | Reverse Proxy | Nginx Gateway |
-| Orchestration | Docker & Docker Compose |
-| Infrastructure| Terraform (Google Cloud Provider) |
+| Orchestration | Docker Compose, Docker Swarm, Kubernetes |
+| Infrastructure| Terraform (Google Cloud Provider), Ansible |
 | Monitoring    | Prometheus & Grafana |
 
 ## Getting Started
@@ -51,7 +53,9 @@ docker compose up --build -d
 - **[Prometheus Alerts & Log Troubleshooting Automation](docs/ASSIGNMENT_MONITORING_LOGS.md)**
 - **[Resource Usage Analysis & Scaling Strategy](docs/ASSIGNMENT_5_RESOURCE_USAGE_AND_SCALING.md)**
 - **[Terraform Deployment Guide (Assignment 5)](terraform/DEPLOYMENT.md)**
-- **[Database Fault Isolation Architecture](DOCKER.md)**
+- **[Ansible Server Automation](ansible/README.md)**
+- **[Kubernetes Deployment Manifests](k8s/README.md)**
+- **[Database Fault Isolation Architecture](docs/DOCKER.md)**
 
 ## Simulating an Incident
 To test the monitoring stack, you can introduce a simulated database connection failure to the Order Service:
@@ -120,6 +124,8 @@ ComfortHotel/
 |-- database/
 |   `-- init.sql
 |-- docs/
+|-- ansible/
+|-- k8s/
 |-- monitoring/
 |-- nginx/
 |-- scripts/
