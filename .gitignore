@@ -35,3 +35,8 @@ monitoring/evidence/*.jpg
 monitoring/evidence/*.jpeg
 monitoring/evidence/*.gif
 monitoring/evidence/*.webp
+
+docs/monitoring_evidence.md
+docs/screenshots/*.png
+docs/screenshots/*.jpg
+docs/screenshots/*.jpeg
