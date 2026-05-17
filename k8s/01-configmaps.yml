@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: comforthotel-config
+  namespace: comforthotel
+data:
+  NODE_ENV: production
+  PORT: "3000"
+  SESSION_TTL_SECONDS: "86400"
+  PRODUCT_SERVICE_URL: http://product-service:3000
+  CHAT_SERVICE_URL: http://chat-service:3000
+  ADMIN_USERNAME: admin
+  ADMIN_EMAIL: admin@comforthotel.local
+  ADMIN_FULL_NAME: Administrator
+  MANAGER_USERNAME: manager
+  MANAGER_EMAIL: manager@comforthotel.local
+  MANAGER_FULL_NAME: Hotel Manager
+  USER_USERNAME: ""
+  USER_EMAIL: ""
+  USER_FULL_NAME: ""
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: db-init-sql
+  namespace: comforthotel
+data:
+  init.sql: |
+    CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+    CREATE TABLE IF NOT EXISTS users (
+      id CHAR(24) PRIMARY KEY DEFAULT encode(gen_random_bytes(12), 'hex'),
+      username TEXT NOT NULL UNIQUE,
+      password TEXT NOT NULL,
+      role TEXT NOT NULL CHECK (role IN ('admin', 'manager', 'user')),
+      email TEXT NOT NULL,
+      full_name TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS rooms (
+      id CHAR(24) PRIMARY KEY DEFAULT encode(gen_random_bytes(12), 'hex'),
+      type TEXT NOT NULL UNIQUE,
+      name TEXT NOT NULL,
+      price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
+      count INTEGER NOT NULL CHECK (count >= 0),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS bookings (
+      id CHAR(24) PRIMARY KEY DEFAULT encode(gen_random_bytes(12), 'hex'),
+      room_name TEXT NOT NULL,
+      room_type TEXT NOT NULL,
+      guest_name TEXT NOT NULL,
+      guest_email TEXT NOT NULL,
+      guest_phone TEXT NOT NULL DEFAULT '',
+      check_in_date TIMESTAMPTZ NOT NULL,
+      check_out_date TIMESTAMPTZ NOT NULL,
+      duration INTEGER NOT NULL CHECK (duration > 0),
+      number_of_guests INTEGER NOT NULL CHECK (number_of_guests > 0),
+      total_price NUMERIC(10, 2) NOT NULL CHECK (total_price >= 0),
+      special_requests TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL CHECK (status IN ('pending', 'confirmed', 'checked-in', 'completed', 'cancelled')),
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      created_by TEXT,
+      updated_at TIMESTAMPTZ,
+      updated_by TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS bookings_room_type_dates_idx
+      ON bookings (room_type, check_in_date, check_out_date);
+
+    CREATE INDEX IF NOT EXISTS bookings_status_idx ON bookings (status);
+
+    CREATE TABLE IF NOT EXISTS contacts (
+      id CHAR(24) PRIMARY KEY DEFAULT encode(gen_random_bytes(12), 'hex'),
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      source TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      created_by TEXT,
+      updated_at TIMESTAMPTZ,
+      updated_by TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS sessions (
+      sid VARCHAR NOT NULL PRIMARY KEY,
+      sess JSON NOT NULL,
+      expire TIMESTAMP(6) NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS sessions_expire_idx ON sessions (expire);

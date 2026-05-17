@@ -43,7 +43,7 @@ app.use(express.json({ limit: '100kb' }));
 app.use(createSessionMiddleware());
 app.use(requestLogger);
 
-// Metrics middleware вЂ” before all routes
+// Metrics middleware before all routes
 app.use((req, res, next) => {
   const end = httpRequestDuration.startTimer();
   res.on('finish', () => {

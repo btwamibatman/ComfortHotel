@@ -1,158 +1,82 @@
-﻿<%- include('partials/head', { title: 'Admin Login - Comfort Hotel' }) %>
-<style>
-  body {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .login-container {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 2rem 0;
-  }
-  
-  .login-card {
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-    overflow: hidden;
-    max-width: 450px;
-    width: 100%;
-  }
-  
-  .login-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 2rem;
-    text-align: center;
-  }
-  
-  .login-header h4 {
-    margin: 0;
-    font-size: 1.8rem;
-    font-weight: 600;
-  }
-  
-  .login-header p {
-    margin: 0.5rem 0 0 0;
-    opacity: 0.9;
-  }
-  
-  .login-body {
-    padding: 2rem;
-  }
-  
-  .form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-  }
-  
-  .btn-login {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    padding: 0.75rem;
-    font-weight: 600;
-    transition: transform 0.2s;
-  }
-  
-  .btn-login:hover {
-    transform: translateY(-2px);
-    background: linear-gradient(135deg, #5568d3 0%, #6a3f8f 100%);
-  }
-  
-  .security-info {
-    background: #f8f9fa;
-    border-left: 4px solid #667eea;
-    padding: 1rem;
-    margin-top: 1rem;
-    border-radius: 5px;
-  }
-  
-  .security-info small {
-    display: block;
-    margin-bottom: 0.3rem;
-  }
-</style>
+<%- include('partials/head', { title: 'Admin Login - Comfort Hotel' }) %>
+<%- include('partials/navbar', { activePage: 'login' }) %>
 
-<%- include('partials/navbar', { activePage: 'admin' }) %>
-
-<div class="login-container">
-  <div class="login-card">
-    <div class="login-header">
-      <h4>рџ”ђ Admin Portal</h4>
-      <p>Secure access to hotel management</p>
-    </div>
-    <div class="login-body">
-      <div id="errorAlert" class="alert alert-danger" style="display: none;"></div>
-      
-      <form id="loginForm">
-        <div class="mb-3">
-          <label for="username" class="form-label fw-bold">Username</label>
-          <input type="text" class="form-control form-control-lg" id="username" name="username" required autofocus placeholder="Enter your username">
-        </div>
-        
-        <div class="mb-3">
-          <label for="password" class="form-label fw-bold">Password</label>
-          <input type="password" class="form-control form-control-lg" id="password" name="password" required placeholder="Enter your password">
-        </div>
-        
-        <button type="submit" class="btn btn-primary btn-login btn-lg w-100 mb-3">
-          Sign In as Admin
-        </button>
-      </form>
-      
-      <div class="security-info">
-        <small><strong>рџ”’ Security Features:</strong></small>
-        <small>вњ“ Session-based authentication</small>
-        <small>вњ“ Bcrypt password hashing</small>
-        <small>вњ“ HttpOnly & Secure cookies</small>
-        <small>вњ“ Protected API endpoints</small>
+<main class="auth-page">
+  <div class="container">
+    <div class="auth-card mx-auto">
+      <div class="auth-header">
+        <div class="eyebrow">Admin Access</div>
+        <h1>Admin Portal</h1>
+        <p>Secure access to hotel management and operations.</p>
       </div>
-      
-      <hr class="my-3">
-      
-      <div class="text-center">
-        <small class="text-muted">
-          Not an administrator? <a href="/staff/login" class="text-decoration-none">Login as Staff</a>
-        </small>
+      <div class="auth-body">
+        <div id="errorAlert" class="alert alert-danger" style="display: none;"></div>
+
+        <form id="loginForm" class="site-form">
+          <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control form-control-lg" id="username" name="username" required autofocus placeholder="Enter your username">
+          </div>
+
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control form-control-lg" id="password" name="password" required placeholder="Enter your password">
+          </div>
+
+          <button type="submit" class="btn-gold w-100 mb-3">
+            Sign In as Admin
+          </button>
+        </form>
+
+        <div class="security-info">
+          <small><strong>Security Features</strong></small>
+          <small>Session-based authentication</small>
+          <small>Bcrypt password hashing</small>
+          <small>HttpOnly and secure cookies</small>
+          <small>Protected API endpoints</small>
+        </div>
+
+        <hr class="my-3">
+
+        <div class="text-center">
+          <small class="text-muted">
+            Not an administrator? <a href="/staff/login" class="text-decoration-none">Login as Staff</a>
+          </small>
+        </div>
       </div>
     </div>
   </div>
-</div>
+</main>
 
 <%- include('partials/footer') %>
 
 <script>
   const urlParams = new URLSearchParams(window.location.search);
   const error = urlParams.get('error');
-  
+
   if (error) {
     const errorAlert = document.getElementById('errorAlert');
     errorAlert.textContent = error;
     errorAlert.style.display = 'block';
   }
-  
+
   document.getElementById('loginForm').addEventListener('submit', async function(e) {
     e.preventDefault();
-    
+
     const errorAlert = document.getElementById('errorAlert');
     const submitBtn = e.target.querySelector('button[type="submit"]');
     const originalBtnText = submitBtn.innerHTML;
-    
+
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Signing in...';
     errorAlert.style.display = 'none';
-    
+
     const formData = new FormData(e.target);
     const data = {
       username: formData.get('username'),
       password: formData.get('password')
     };
-    
+
     try {
       const response = await fetch('/auth/admin/login', {
         method: 'POST',
@@ -162,7 +86,7 @@
         credentials: 'same-origin',
         body: JSON.stringify(data)
       });
-      
+
       const contentType = response.headers.get('content-type') || '';
       let result = {};
       if (contentType.includes('application/json')) {
@@ -171,13 +95,13 @@
         const text = await response.text();
         result = { error: text || 'Login failed' };
       }
-      
+
       if (response.ok && result.success) {
         errorAlert.classList.remove('alert-danger');
         errorAlert.classList.add('alert-success');
         errorAlert.textContent = `Welcome back, ${result.user.fullName}! Redirecting...`;
         errorAlert.style.display = 'block';
-        
+
         setTimeout(() => {
           window.location.href = '/admin/dashboard';
         }, 1000);
@@ -186,7 +110,7 @@
         errorAlert.classList.add('alert-danger');
         errorAlert.textContent = result.error || 'Login failed';
         errorAlert.style.display = 'block';
-        
+
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalBtnText;
       }
@@ -196,11 +120,12 @@
       errorAlert.classList.add('alert-danger');
       errorAlert.textContent = 'Network error. Please try again.';
       errorAlert.style.display = 'block';
-      
+
       submitBtn.disabled = false;
       submitBtn.innerHTML = originalBtnText;
     }
   });
 </script>
+<%- include('partials/currency-script') %>
 </body>
 </html>

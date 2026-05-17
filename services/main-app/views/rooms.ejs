@@ -1,54 +1,83 @@
-﻿<%- include('partials/head', { title: 'Comfort Hotel - Rooms' }) %>
+<%- include('partials/head', { title: 'Comfort Hotel - Rooms' }) %>
 <%- include('partials/navbar', { activePage: 'rooms' }) %>
 
-<main class="container py-4">
-  <h2 class="mb-4">Our Rooms</h2>
-  
-  <div class="mb-4">
-    <button class="btn btn-outline-danger filter-btn active" data-filter="all">All Rooms</button>
-    <% rooms.forEach(room => { %>
-      <button class="btn btn-outline-danger filter-btn" data-filter="<%= room.type %>"><%= room.name %></button>
-    <% }); %>
-  </div>
-
-  <div class="row g-4" id="roomsContainer">
-    <% rooms.forEach((room, index) => { 
-      // Pick a random image based on index for variety
-      const imgIndex = (index % 3) + 1;
-    %>
-    <div class="col-md-4 room-item" data-category="<%= room.type %>">
-      <div class="card room-card h-100">
-        <img src="<%= imgIndex %>.jpg" class="card-img-top gallery-img" alt="<%= room.name %>" data-room="<%= room.type %>">
-        <div class="card-body">
-          <h5 class="card-title"><%= room.name %></h5>
-          <p class="card-text">Total available: <%= room.count %></p>
-          <p class="card-text"><strong>Price: <span class="room-price" data-base="<%= room.price %>">$<%= room.price %></span>/night</strong></p>
-          <a href="/booking?roomType=<%= room.type %>&roomName=<%= encodeURIComponent(room.name) %>" class="btn btn-danger">Book Now</a>
-        </div>
-      </div>
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <div class="eyebrow">Rooms</div>
+      <h1 class="page-title text-white">Choose your perfect room</h1>
+      <p>Browse available room categories, compare prices, and reserve the stay that fits your trip.</p>
     </div>
-    <% }); %>
-  </div>
+  </section>
 
-  <h2 class="mt-5">Room Pricing Table</h2>
-  <table class="table table-striped mt-3">
-    <thead class="table-dark">
-      <tr>
-        <th>Room Type</th>
-        <th>Price/Night</th>
-        <th>Total Available</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% rooms.forEach(room => { %>
-      <tr>
-        <td><%= room.name %></td>
-        <td><span class="table-price" data-base="<%= room.price %>">$<%= room.price %></span></td>
-        <td><%= room.count %></td>
-      </tr>
-      <% }); %>
-    </tbody>
-  </table>
+  <section class="page-content">
+    <div class="container">
+      <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+          <h2 class="h1 mb-2">Our Rooms</h2>
+          <p class="hotel-muted mb-0">Premium comfort, practical amenities, and simple booking.</p>
+        </div>
+        <a href="/booking" class="btn-gold">Book Now</a>
+      </div>
+
+      <div class="filter-toolbar" aria-label="Room filters">
+        <button class="btn filter-btn active" data-filter="all">All Rooms</button>
+        <% rooms.forEach(room => { %>
+          <button class="btn filter-btn" data-filter="<%= room.type %>"><%= room.name %></button>
+        <% }); %>
+      </div>
+
+      <% if (rooms.length === 0) { %>
+        <div class="hotel-card p-4 text-center">
+          <h3 class="h4">No rooms available</h3>
+          <p class="hotel-muted mb-0">Please check back later or contact the hotel for assistance.</p>
+        </div>
+      <% } else { %>
+        <div class="row g-4" id="roomsContainer">
+          <% rooms.forEach((room, index) => {
+            const imgIndex = (index % 3) + 1;
+          %>
+          <div class="col-lg-4 col-md-6 room-item" data-category="<%= room.type %>">
+            <article class="room-card">
+              <img src="/<%= imgIndex %>.jpg" class="gallery-img" alt="<%= room.name %>" data-room="<%= room.type %>">
+              <div class="p-4">
+                <div class="eyebrow mb-2"><%= room.type %></div>
+                <h3 class="h4"><%= room.name %></h3>
+                <p class="hotel-muted">Total available: <%= room.count %></p>
+                <p class="mb-4"><strong><span class="room-price" data-base="<%= room.price %>">$<%= room.price %></span>/night</strong></p>
+                <a href="/booking?roomType=<%= room.type %>&roomName=<%= encodeURIComponent(room.name) %>" class="btn-teal book-room-link">Book Now</a>
+              </div>
+            </article>
+          </div>
+          <% }); %>
+        </div>
+
+        <div class="mt-5">
+          <h2 class="h1 mb-3">Room Pricing</h2>
+          <div class="site-table">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Room Type</th>
+                  <th>Price/Night</th>
+                  <th>Total Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% rooms.forEach(room => { %>
+                <tr>
+                  <td><%= room.name %></td>
+                  <td><span class="table-price" data-base="<%= room.price %>">$<%= room.price %></span></td>
+                  <td><%= room.count %></td>
+                </tr>
+                <% }); %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% } %>
+    </div>
+  </section>
 </main>
 
 <div class="modal fade" id="imageModal" tabindex="-1">
@@ -59,7 +88,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body text-center">
-        <img id="modalImage" src="" class="img-fluid" alt="Room">
+        <img id="modalImage" src="" class="img-fluid rounded" alt="Room">
       </div>
     </div>
   </div>
@@ -75,59 +104,32 @@ $(document).ready(function() {
   fetchExchangeRates();
 
   $('.room-item').hide().each(function(index) {
-    $(this).delay(200 * index).fadeIn(600);
+    $(this).delay(110 * index).fadeIn(420);
   });
 
   $('.filter-btn').click(function() {
-    $('.filter-btn').removeClass('active');
-    $(this).addClass('active');
-    
-    const filter = $(this).attr('data-filter');
-    
-    if (filter === 'all') {
-      $('.room-item').fadeIn(500);
-    } else {
-      $('.room-item').each(function() {
-        if ($(this).attr('data-category') === filter) {
-          $(this).fadeIn(500);
-        } else {
-          $(this).fadeOut(500);
-        }
-      });
-    }
+    applyRoomFilter($(this).attr('data-filter'));
   });
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const requestedType = urlParams.get('roomType');
+  if (requestedType && $(`.filter-btn[data-filter="${requestedType}"]`).length) {
+    applyRoomFilter(requestedType);
+  }
+
+  preserveSearchValues(urlParams);
 
   $('.gallery-img').click(function() {
     const src = $(this).attr('src');
     const alt = $(this).attr('alt');
-    
+
     $('#modalImage').attr('src', src);
+    $('#modalImage').attr('alt', alt);
     $('#modalTitle').text(alt);
-    
+
     const modal = new bootstrap.Modal(document.getElementById('imageModal'));
     modal.show();
   });
-
-  $('.gallery-img').hover(
-    function() {
-      $(this).css({
-        'cursor': 'pointer',
-        'opacity': '0.8'
-      });
-    },
-    function() {
-      $(this).css('opacity', '1');
-    }
-  );
-
-  $('table tbody tr').hover(
-    function() {
-      $(this).css('background-color', 'lightblue');
-    },
-    function() {
-      $(this).css('background-color', '');
-    }
-  );
 
   $('#currencySelector').change(function() {
     const currency = $(this).val();
@@ -136,16 +138,48 @@ $(document).ready(function() {
   });
 });
 
+function applyRoomFilter(filter) {
+  $('.filter-btn').removeClass('active');
+  $(`.filter-btn[data-filter="${filter}"]`).addClass('active');
+
+  if (filter === 'all') {
+    $('.room-item').fadeIn(300);
+    return;
+  }
+
+  $('.room-item').each(function() {
+    if ($(this).attr('data-category') === filter) {
+      $(this).fadeIn(300);
+    } else {
+      $(this).fadeOut(300);
+    }
+  });
+}
+
+function preserveSearchValues(urlParams) {
+  const keys = ['checkIn', 'checkOut', 'guests'];
+  $('.book-room-link').each(function() {
+    const bookingUrl = new URL(this.href, window.location.origin);
+    keys.forEach((key) => {
+      const value = urlParams.get(key);
+      if (value) {
+        bookingUrl.searchParams.set(key, value);
+      }
+    });
+    this.href = bookingUrl.pathname + bookingUrl.search;
+  });
+}
+
 function fetchExchangeRates() {
   const savedRates = localStorage.getItem('exchangeRates');
-  
+
   if (savedRates) {
     exchangeRates = JSON.parse(savedRates);
     updateAllPrices();
   }
-  
+
   const url = 'https://api.exchangerate-api.com/v4/latest/USD';
-  
+
   $.ajax({
     url: url,
     method: 'GET',
@@ -173,10 +207,10 @@ function loadCurrency() {
 
 function getCurrencySymbol(currency) {
   const symbols = {
-    'USD': '$',
-    'EUR': 'в‚¬',
-    'KZT': 'в‚ё',
-    'RUB': 'в‚Ѕ'
+    USD: '$',
+    EUR: '\u20ac',
+    KZT: '\u20b8',
+    RUB: '\u20bd'
   };
   return symbols[currency] || currency;
 }
@@ -185,13 +219,13 @@ function updateAllPrices() {
   const currency = $('#currencySelector').val();
   const rate = exchangeRates[currency] || 1;
   const symbol = getCurrencySymbol(currency);
-  
+
   $('.room-price').each(function() {
     const basePrice = parseFloat($(this).attr('data-base'));
     const convertedPrice = Math.round(basePrice * rate);
     $(this).text(symbol + convertedPrice);
   });
-  
+
   $('.table-price').each(function() {
     const basePrice = parseFloat($(this).attr('data-base'));
     const convertedPrice = Math.round(basePrice * rate);
