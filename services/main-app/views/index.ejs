@@ -1,66 +1,130 @@
-﻿<%- include('partials/head', { title: 'Comfort Hotel - Home' }) %>
+<%- include('partials/head', { title: 'Comfort Hotel - Home' }) %>
 <%- include('partials/navbar', { activePage: 'index' }) %>
 
-<main class="container py-5">
-
-  <div class="row mb-5">
-  <div class="col-md-8 mx-auto">
-    <div class="welcome-section text-center">
-      <h2 class="display-4 mb-4">Welcome to Comfort Hotel</h2>
-      <p class="lead">Relax and enjoy your stay. Book a room today and experience comfort like never before.</p>
-      <a href="/rooms" class="btn btn-danger btn-lg mt-3">See our rooms в†’</a>
-    </div>
-  </div>
-</div>
-
-<div class="row mb-4">
-  <div class="col-md-8 mx-auto">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title mb-3">Quick Actions</h5>
-        <div class="d-grid gap-2">
-          <a href="/booking" class="btn btn-danger">Book a Room</a>
-          <a href="/rooms" class="btn btn-outline-danger">View Rooms</a>
-          <a href="/contact" class="btn btn-outline-danger">Contact Us</a>
-          <a href="/staff/login" class="btn btn-outline-secondary">Login</a>
+<main>
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="hero-title">Find your perfect <span>stay</span></h1>
+        <p class="hero-subtitle">Comfortable rooms, simple booking, and premium service in one place.</p>
+        <div class="hero-actions">
+          <a href="/booking" class="btn-gold">Book Now</a>
+          <a href="/rooms" class="btn-outline-gold">Explore Rooms</a>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </section>
 
-  <div class="features mt-5">
-    <h3 class="text-center mb-4">Why Choose Us</h3>
-    <div class="row g-4">
-      <div class="col-md-4">
-        <div class="feature-box text-center p-4">
-          <h4>Luxury Comfort</h4>
-          <p>Experience premium comfort in all our rooms with modern amenities</p>
+  <section class="quick-booking">
+    <div class="container">
+      <form id="quickBookingForm" class="quick-booking-card" method="GET" action="/rooms">
+        <div class="row g-3 align-items-end">
+          <div class="col-xl-2 col-lg-12">
+            <div class="quick-booking-title">
+              <span class="quick-icon">01</span>
+              <div>
+                <h2 class="h4 mb-1">Quick Booking</h2>
+                <p class="hotel-muted mb-0">Find the best room for your stay</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-xl-2 col-md-6">
+            <label for="quickCheckIn">Check-in</label>
+            <input type="date" class="form-control" id="quickCheckIn" name="checkIn">
+          </div>
+          <div class="col-xl-2 col-md-6">
+            <label for="quickCheckOut">Check-out</label>
+            <input type="date" class="form-control" id="quickCheckOut" name="checkOut">
+          </div>
+          <div class="col-xl-2 col-md-6">
+            <label for="quickGuests">Guests</label>
+            <select class="form-select" id="quickGuests" name="guests">
+              <option value="1">1 Guest</option>
+              <option value="2" selected>2 Guests</option>
+              <option value="3">3 Guests</option>
+              <option value="4">4 Guests</option>
+              <option value="5">5+ Guests</option>
+            </select>
+          </div>
+          <div class="col-xl-2 col-md-6">
+            <label for="quickRoomType">Room Type</label>
+            <select class="form-select" id="quickRoomType" name="roomType">
+              <option value="">Any Type</option>
+              <option value="standard">Standard</option>
+              <option value="deluxe">Deluxe</option>
+              <option value="suite">Suite</option>
+              <option value="family">Family</option>
+            </select>
+          </div>
+          <div class="col-xl-2 col-lg-12">
+            <button type="submit" class="btn-teal w-100">Search Rooms</button>
+          </div>
         </div>
+      </form>
+    </div>
+  </section>
+
+  <section class="section-block">
+    <div class="container">
+      <div class="section-heading">
+        <div class="eyebrow">Why Choose Us</div>
+        <h2>Experience the best with us</h2>
+        <div class="section-rule"></div>
       </div>
-      <div class="col-md-4">
-        <div class="feature-box text-center p-4">
-          <h4>Great Location</h4>
-          <p>Located in the heart of the city with easy access to attractions</p>
+
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <article class="hotel-card feature-card">
+            <span class="feature-icon">LC</span>
+            <div>
+              <h3 class="h5">Luxury Comfort</h3>
+              <p class="mb-0">Enjoy modern rooms with premium amenities and a calm atmosphere for a perfect stay.</p>
+            </div>
+          </article>
         </div>
-      </div>
-      <div class="col-md-4">
-        <div class="feature-box text-center p-4">
-          <h4>Best Service</h4>
-          <p>24/7 customer service ready to assist you anytime</p>
+        <div class="col-lg-4">
+          <article class="hotel-card feature-card">
+            <span class="feature-icon">GL</span>
+            <div>
+              <h3 class="h5">Great Location</h3>
+              <p class="mb-0">Stay close to attractions, restaurants, transport, and the heart of the city.</p>
+            </div>
+          </article>
+        </div>
+        <div class="col-lg-4">
+          <article class="hotel-card feature-card">
+            <span class="feature-icon">24</span>
+            <div>
+              <h3 class="h5">24/7 Service</h3>
+              <p class="mb-0">Our friendly team is available around the clock whenever you need assistance.</p>
+            </div>
+          </article>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 
-  <div class="mt-5 text-center">
-    <button id="showOffer" class="btn btn-warning btn-lg">View Special Offer</button>
-    <div id="specialOffer" class="alert alert-success mt-3" style="display: none;">
-      <h4>Limited Time Offer!</h4>
-      <p>Book 3 nights and get 1 night free! Valid until end of month.</p>
+  <section class="pb-5" id="special-offer">
+    <div class="container">
+      <div class="offer-banner">
+        <div class="eyebrow">Special Offer</div>
+        <h2>Save up to 20% on your next booking</h2>
+        <p>Limited-time offer for selected rooms. Book now and enjoy more comfort for less.</p>
+        <a href="/booking?offer=20" class="btn-gold">View Offer</a>
+      </div>
     </div>
-  </div>
+  </section>
 
+  <section class="trust-row">
+    <div class="container">
+      <div class="row">
+        <div class="col-md-3 col-6"><div class="trust-item"><span class="trust-dot"></span>Best Price Guarantee</div></div>
+        <div class="col-md-3 col-6"><div class="trust-item"><span class="trust-dot"></span>Free Cancellation</div></div>
+        <div class="col-md-3 col-6"><div class="trust-item"><span class="trust-dot"></span>Secure Booking</div></div>
+        <div class="col-md-3 col-6"><div class="trust-item"><span class="trust-dot"></span>No Hidden Fees</div></div>
+      </div>
+    </div>
+  </section>
 </main>
 
 <%- include('partials/footer') %>
@@ -69,20 +133,28 @@
 $(document).ready(function() {
   loadCurrency();
 
-  $('.feature-box').hide().fadeIn(1000);
-  
-  $('#showOffer').click(function() {
-    $('#specialOffer').slideToggle(500);
-    $(this).text(function(i, text) {
-      return text === "View Special Offer" ? "Hide Special Offer" : "View Special Offer";
-    });
-  });
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+  const nextDay = new Date(today);
+  nextDay.setDate(today.getDate() + 2);
+  const toDateValue = (date) => date.toISOString().split('T')[0];
 
-  $('.feature-box').hover(
-    function() { $(this).animate({ padding: '30px' }, 200); },
-    function() { $(this).animate({ padding: '24px' }, 200); }
-  );
-})
+  $('#quickCheckIn').attr('min', toDateValue(today)).val(toDateValue(tomorrow));
+  $('#quickCheckOut').attr('min', toDateValue(tomorrow)).val(toDateValue(nextDay));
+
+  $('#quickCheckIn').on('change', function() {
+    const checkIn = new Date($(this).val());
+    if (!Number.isNaN(checkIn.getTime())) {
+      const minCheckout = new Date(checkIn);
+      minCheckout.setDate(checkIn.getDate() + 1);
+      $('#quickCheckOut').attr('min', toDateValue(minCheckout));
+      if (!$('#quickCheckOut').val() || new Date($('#quickCheckOut').val()) <= checkIn) {
+        $('#quickCheckOut').val(toDateValue(minCheckout));
+      }
+    }
+  });
+});
 </script>
 
 <%- include('partials/currency-script') %>
