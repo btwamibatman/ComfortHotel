@@ -1,79 +1,105 @@
-﻿<%- include('partials/head', { title: 'Comfort Hotel - Contact' }) %>
+<%- include('partials/head', { title: 'Comfort Hotel - Contact' }) %>
 <%- include('partials/navbar', { activePage: 'contact' }) %>
 
-<main class="container py-5">
-  <div class="row">
-    <div class="col-md-6">
-      <h2 class="mb-4">Contact Us</h2>
-      
-      <div class="card">
-        <div class="card-body">
-          <form id="contactForm" method="POST" action="/contact" class="needs-validation" novalidate>
-            <div class="mb-3">
-              <label for="name" class="form-label">Name</label>
-              <input type="text" class="form-control" id="name" name="name" required>
-              <div class="invalid-feedback">Please enter your name.</div>
+<main>
+  <section class="page-hero">
+    <div class="container">
+      <div class="eyebrow">Contact</div>
+      <h1 class="page-title text-white">We are here to help</h1>
+      <p>Questions about rooms, bookings, or special requests? Send us a message and the team will respond.</p>
+    </div>
+  </section>
+
+  <section class="page-content">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-lg-7">
+          <div class="hotel-card p-4 p-md-5">
+            <div class="eyebrow">Message Us</div>
+            <h2 class="h1 mb-4">Contact Us</h2>
+            <div id="contactSuccess" class="alert alert-success" style="display: none;">
+              Thanks. Your message has been saved.
             </div>
 
-            <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" class="form-control" id="email" name="email" required>
-              <div class="invalid-feedback">Please enter a valid email address.</div>
-            </div>
+            <form id="contactForm" method="POST" action="/contact" class="needs-validation site-form" novalidate>
+              <div class="mb-3">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+                <div class="invalid-feedback">Please enter your name.</div>
+              </div>
 
-            <div class="mb-3">
-              <label for="message" class="form-label">Message</label>
-              <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
-              <div class="invalid-feedback">Please enter your message.</div>
-            </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+                <div class="invalid-feedback">Please enter a valid email address.</div>
+              </div>
 
-            <button type="submit" class="btn btn-danger btn-lg">Send Message</button>
-          </form>
+              <div class="mb-4">
+                <label for="message" class="form-label">Message</label>
+                <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                <div class="invalid-feedback">Please enter your message.</div>
+              </div>
+
+              <button type="submit" class="btn-gold">Send Message</button>
+            </form>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="booking-aside mb-4">
+            <div class="eyebrow">Reservations</div>
+            <h2 class="h3">Need booking support?</h2>
+            <p>Use the booking page for reservations, or contact us for group stays and custom requests.</p>
+            <a href="/booking" class="btn-outline-gold">Book a Room</a>
+          </div>
+
+          <div class="contact-info row g-3">
+            <div class="col-12">
+              <div class="hotel-card info-card">
+                <h3 class="h5">Email</h3>
+                <p class="mb-0"><a href="mailto:info@comforthotel.com">info@comforthotel.com</a></p>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="hotel-card info-card">
+                <h3 class="h5">Phone</h3>
+                <p class="mb-0"><a href="tel:+12345678900">+1 234 567 8900</a></p>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="hotel-card info-card">
+                <h3 class="h5">Address</h3>
+                <p class="mb-0">123 Comfort Street, Cityville, USA</p>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="hotel-card info-card">
+                <h3 class="h5">Working Hours</h3>
+                <p class="mb-1">Monday - Friday: 9:00 AM - 9:00 PM</p>
+                <p class="mb-0">Saturday - Sunday: 10:00 AM - 12:00 PM</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-
-    <div class="col-md-6">
-      <h3 class="mb-4">Our Information</h3>
-      <div class="contact-info">
-        <div class="info-item mb-3 p-3 border rounded">
-          <h5>Email</h5>
-          <p>writeyouremail@example.com</p>
-        </div>
-        <div class="info-item mb-3 p-3 border rounded">
-          <h5>Phone</h5>
-          <p>+7 777 000 12 23</p>
-        </div>
-        <div class="info-item mb-3 p-3 border rounded">
-          <h5>Address</h5>
-          <p>Astana, Kazakhstan</p>
-        </div>
-        <div class="info-item mb-3 p-3 border rounded">
-          <h5>Working Hours</h5>
-          <p>Monday - Friday: 9:00 AM - 9:00 PM</p>
-          <p>Saturday - Sunday: 10:00 AM - 12:00 PM</p>
-        </div>
-      </div>
-    </div>
-  </div>
+  </section>
 </main>
 
 <%- include('partials/footer') %>
 
 <script>
 $(document).ready(function() {
-  $('.info-item').hide().each(function(index) {
-    $(this).delay(200 * index).fadeIn(600);
-  });
+  loadCurrency();
 
-  $('.info-item').hover(
-    function() {
-      $(this).css('background-color', 'lightgray');
-    },
-    function() {
-      $(this).css('background-color', 'white');
-    }
-  );
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('sent') === '1') {
+    $('#contactSuccess').show();
+  }
+
+  $('.info-card').hide().each(function(index) {
+    $(this).delay(100 * index).fadeIn(380);
+  });
 
   $('#contactForm').submit(function(e) {
     const form = this;
