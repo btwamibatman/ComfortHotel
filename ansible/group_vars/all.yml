@@ -5,6 +5,9 @@ repo_version: main
 compose_file_url: ""
 
 compose_project_name: comforthotel
+enable_https: false
+app_domain: ""
+letsencrypt_email: ""
 
 db_password: change_me_db_password
 session_secret: change_me_session_secret

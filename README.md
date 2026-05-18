@@ -48,6 +48,8 @@ docker compose up --build -d
 - **Grafana Dashboard**: `http://localhost:3001`
 - **Prometheus Metrics**: `http://localhost:9090`
 
+For production HTTPS, enable Let's Encrypt in `ansible/group_vars/all.yml` and deploy with the Ansible playbook. See `ansible/README.md`.
+
 ## Reports & Documentation
 - **[Incident Response & Postmortem (Assignment 4)](docs/INCIDENT_REPORT.md)** 
 - **[Prometheus Alerts & Log Troubleshooting Automation](docs/ASSIGNMENT_MONITORING_LOGS.md)**

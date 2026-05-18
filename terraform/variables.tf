@@ -22,9 +22,9 @@ variable "vm_name" {
 }
 
 variable "machine_type" {
-  description = "Compute Engine machine type. e2-micro is used to stay within the GCP Always Free VM shape in eligible regions."
+  description = "Compute Engine machine type. e2-medium is used because the full Docker Compose stack needs more memory than e2-micro."
   type        = string
-  default     = "e2-micro"
+  default     = "e2-medium"
 }
 
 variable "image" {
@@ -58,7 +58,7 @@ variable "ssh_public_key_path" {
 }
 
 variable "public_source_ranges" {
-  description = "CIDR ranges allowed to reach public web ports 80 and 3001. Port 3001 is used because docker-compose.yml maps Grafana as 3001:3000."
+  description = "CIDR ranges allowed to reach public web ports 80, 443, and 3001. Port 3001 is used because docker-compose.yml maps Grafana as 3001:3000."
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
