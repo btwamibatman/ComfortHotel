@@ -76,6 +76,9 @@ jobs:
           chmod 600 "$HOME/.kube/config"
           kubectl config set-context --current --namespace="$NAMESPACE"
 
+      - name: Ensure namespace exists
+        run: kubectl apply -f k8s/00-namespace.yml
+
       - name: Configure GHCR image pull secret
         env:
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
