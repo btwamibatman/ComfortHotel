@@ -14,6 +14,8 @@ spec:
         app: product-service
         tier: backend
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - name: product-service
           image: comforthotel-product-service:local
@@ -83,6 +85,8 @@ spec:
         app: order-service
         tier: backend
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - name: order-service
           image: comforthotel-order-service:local
@@ -164,6 +168,8 @@ spec:
         app: auth-service
         tier: backend
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - name: auth-service
           image: comforthotel-auth-service:local
@@ -283,6 +289,8 @@ spec:
         app: chat-service
         tier: backend
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - name: chat-service
           image: comforthotel-chat-service:local
@@ -352,6 +360,8 @@ spec:
         app: app
         tier: frontend
     spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
       containers:
         - name: app
           image: comforthotel-app:local
