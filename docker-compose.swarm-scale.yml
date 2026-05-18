@@ -42,6 +42,14 @@ services:
       restart_policy:
         condition: on-failure
 
+  payment-service:
+    image: comforthotel-payment-service:local
+    container_name: !reset null
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
   chat-service:
     image: comforthotel-chat-service:local
 

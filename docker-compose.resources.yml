@@ -33,6 +33,16 @@ services:
           cpus: "1.00"
           memory: 512M
 
+  payment-service:
+    deploy:
+      resources:
+        reservations:
+          cpus: "0.10"
+          memory: 96M
+        limits:
+          cpus: "0.50"
+          memory: 256M
+
   chat-service:
     deploy:
       resources:

@@ -155,6 +155,70 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  name: payment-service
+  namespace: comforthotel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+        tier: backend
+    spec:
+      imagePullSecrets:
+        - name: ghcr-pull-secret
+      containers:
+        - name: payment-service
+          image: comforthotel-payment-service:local
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: NODE_ENV
+            - name: SERVICE_NAME
+              value: payment-service
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: comforthotel-config
+                  key: PORT
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  namespace: comforthotel
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
   name: auth-service
   namespace: comforthotel
 spec:

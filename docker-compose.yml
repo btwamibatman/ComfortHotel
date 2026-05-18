@@ -112,6 +112,23 @@
       timeout: 15s
       retries: 10
 
+  payment-service:
+    build:
+      context: ./services/payment-service
+    container_name: comforthotel-payment-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      SERVICE_NAME: payment-service
+      PORT: 3000
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+
   chat-service:
     build:
       context: ./services/chat-service
@@ -217,6 +234,8 @@
       auth-service:
         condition: service_healthy
       order-service:
+        condition: service_healthy
+      payment-service:
         condition: service_healthy
       product-service:
         condition: service_healthy
