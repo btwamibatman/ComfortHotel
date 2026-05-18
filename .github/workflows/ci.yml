@@ -1,0 +1,169 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  lint:
+    name: ESLint (${{ matrix.service }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          - auth-service
+          - chat-service
+          - docker-metrics-exporter
+          - main-app
+          - order-service
+          - product-service
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run ESLint
+        run: npx --yes eslint@9 ./services/${{ matrix.service }} --no-config-lookup
+
+  docker-build:
+    name: Docker build (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    needs: lint
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: auth-service
+            context: ./services/auth-service
+            dockerfile: Dockerfile
+          - image: chat-service
+            context: ./services/chat-service
+            dockerfile: Dockerfile
+          - image: docker-metrics-exporter
+            context: ./services/docker-metrics-exporter
+            dockerfile: Dockerfile
+          - image: gateway
+            context: .
+            dockerfile: Dockerfile.frontend
+          - image: main-app
+            context: ./services/main-app
+            dockerfile: Dockerfile
+          - image: order-service
+            context: ./services/order-service
+            dockerfile: Dockerfile
+          - image: product-service
+            context: ./services/product-service
+            dockerfile: Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: |
+          docker build \
+            --file "${{ matrix.context }}/${{ matrix.dockerfile }}" \
+            --tag comfort-hotel-${{ matrix.image }}:${{ github.sha }} \
+            "${{ matrix.context }}"
+
+  docker-push:
+    name: Docker push (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: auth-service
+            context: ./services/auth-service
+            dockerfile: Dockerfile
+          - image: chat-service
+            context: ./services/chat-service
+            dockerfile: Dockerfile
+          - image: docker-metrics-exporter
+            context: ./services/docker-metrics-exporter
+            dockerfile: Dockerfile
+          - image: gateway
+            context: .
+            dockerfile: Dockerfile.frontend
+          - image: main-app
+            context: ./services/main-app
+            dockerfile: Dockerfile
+          - image: order-service
+            context: ./services/order-service
+            dockerfile: Dockerfile
+          - image: product-service
+            context: ./services/product-service
+            dockerfile: Dockerfile
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Login to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Build and push Docker image
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          IMAGE="ghcr.io/${OWNER}/${{ matrix.image }}:${GITHUB_SHA}"
+          SHORT_IMAGE="ghcr.io/${OWNER}/${{ matrix.image }}:${GITHUB_SHA::7}"
+
+          docker build \
+            --file "${{ matrix.context }}/${{ matrix.dockerfile }}" \
+            --tag "$IMAGE" \
+            --tag "$SHORT_IMAGE" \
+            "${{ matrix.context }}"
+
+          docker push "$IMAGE"
+          docker push "$SHORT_IMAGE"
+
+  notify:
+    name: Notify Slack
+    runs-on: ubuntu-latest
+    needs:
+      - lint
+      - docker-build
+      - docker-push
+    if: always()
+
+    steps:
+      - name: Send Slack notification
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+          LINT_RESULT: ${{ needs.lint.result }}
+          DOCKER_BUILD_RESULT: ${{ needs['docker-build'].result }}
+          DOCKER_PUSH_RESULT: ${{ needs['docker-push'].result }}
+        run: |
+          if [ "$LINT_RESULT" = "success" ] && [ "$DOCKER_BUILD_RESULT" = "success" ] && { [ "$DOCKER_PUSH_RESULT" = "success" ] || [ "$DOCKER_PUSH_RESULT" = "skipped" ]; }; then
+            STATUS="✅"
+          else
+            STATUS="❌"
+          fi
+
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="${STATUS} CI | branch: ${BRANCH} | SHA: ${GITHUB_SHA} | push: ${DOCKER_PUSH_RESULT} | run: ${RUN_URL}"
+
+          curl \
+            --fail \
+            --request POST \
+            --header 'Content-type: application/json' \
+            --data "{\"text\":\"${MESSAGE}\"}" \
+            "$SLACK_WEBHOOK_URL"

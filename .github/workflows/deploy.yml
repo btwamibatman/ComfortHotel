@@ -1,0 +1,190 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - staging
+          - production
+      image_tag:
+        description: Git SHA image tag to deploy
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    env:
+      IMAGE_TAG: ${{ inputs.image_tag }}
+      TARGET_ENV: ${{ inputs.environment }}
+      NAMESPACE: comforthotel
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    steps:
+      - name: Notify deploy start
+        run: |
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="🚀 Deploy started | env: ${TARGET_ENV} | tag: ${IMAGE_TAG} | run: ${RUN_URL}"
+
+          curl \
+            --fail \
+            --request POST \
+            --header 'Content-type: application/json' \
+            --data "{\"text\":\"${MESSAGE}\"}" \
+            "$SLACK_WEBHOOK_URL"
+
+      - name: Validate image tag
+        run: |
+          if [[ ! "$IMAGE_TAG" =~ ^([0-9a-fA-F]{7}|[0-9a-fA-F]{40})$ ]]; then
+            echo "Invalid image_tag: '${IMAGE_TAG}'. Expected a 7 or 40 character git SHA made of hex characters."
+            exit 1
+          fi
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install kubectl
+        run: |
+          if command -v kubectl >/dev/null 2>&1; then
+            kubectl version --client=true
+            exit 0
+          fi
+
+          KUBECTL_VERSION="$(curl -fsSL https://dl.k8s.io/release/stable.txt)"
+          curl -fsSLo kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/kubectl
+          kubectl version --client=true
+
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p "$HOME/.kube"
+          printf '%s' "$KUBE_CONFIG" > "$HOME/.kube/config"
+          chmod 600 "$HOME/.kube/config"
+          kubectl config set-context --current --namespace="$NAMESPACE"
+
+      - name: Configure GHCR image pull secret
+        env:
+          GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+        run: |
+          : "${GHCR_USERNAME:?GHCR_USERNAME GitHub Secret is required for private GHCR pulls}"
+          : "${GHCR_TOKEN:?GHCR_TOKEN GitHub Secret is required for private GHCR pulls}"
+
+          kubectl -n "$NAMESPACE" create secret docker-registry ghcr-pull-secret \
+            --docker-server=ghcr.io \
+            --docker-username="$GHCR_USERNAME" \
+            --docker-password="$GHCR_TOKEN" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
+      - name: Login to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "$GITHUB_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+
+      - name: Verify GHCR images
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          SERVICES=(
+            auth-service
+            chat-service
+            gateway
+            main-app
+            order-service
+            product-service
+          )
+
+          for service in "${SERVICES[@]}"; do
+            image="ghcr.io/${OWNER}/${service}:${IMAGE_TAG}"
+            echo "Checking ${image}"
+            docker manifest inspect "$image" >/dev/null
+          done
+
+      - name: Deploy and check rollout
+        run: |
+          OWNER="${GITHUB_REPOSITORY_OWNER,,}"
+          RENDERED_DIR="${RUNNER_TEMP}/k8s-rendered"
+          rm -rf "$RENDERED_DIR"
+          cp -R k8s "$RENDERED_DIR"
+
+          sed -i "s|image: comforthotel-auth-service:local|image: ghcr.io/${OWNER}/auth-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
+          sed -i "s|image: comforthotel-chat-service:local|image: ghcr.io/${OWNER}/chat-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
+          sed -i "s|image: comforthotel-app:local|image: ghcr.io/${OWNER}/main-app:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
+          sed -i "s|image: comforthotel-order-service:local|image: ghcr.io/${OWNER}/order-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
+          sed -i "s|image: comforthotel-product-service:local|image: ghcr.io/${OWNER}/product-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
+          sed -i "s|image: comforthotel-gateway:local|image: ghcr.io/${OWNER}/gateway:${IMAGE_TAG}|g" "$RENDERED_DIR/05-gateway.yml"
+
+          DEPLOYMENTS=(
+            auth-service
+            chat-service
+            gateway
+            app
+            order-service
+            product-service
+          )
+
+          kubectl apply -f "$RENDERED_DIR"
+
+          for deployment in "${DEPLOYMENTS[@]}"; do
+            if ! kubectl -n "$NAMESPACE" rollout status "deployment/${deployment}" --timeout=180s; then
+              RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+              MESSAGE="↩️ Rollback started | env: ${TARGET_ENV} | failed deployment: ${deployment} | tag: ${IMAGE_TAG} | run: ${RUN_URL}"
+
+              curl \
+                --fail \
+                --request POST \
+                --header 'Content-type: application/json' \
+                --data "{\"text\":\"${MESSAGE}\"}" \
+                "$SLACK_WEBHOOK_URL"
+
+              for rollback_deployment in "${DEPLOYMENTS[@]}"; do
+                kubectl -n "$NAMESPACE" rollout undo "deployment/${rollback_deployment}" || true
+              done
+
+              for rollback_deployment in "${DEPLOYMENTS[@]}"; do
+                kubectl -n "$NAMESPACE" rollout status "deployment/${rollback_deployment}" --timeout=180s || true
+              done
+
+              exit 1
+            fi
+          done
+
+      - name: Notify deploy success
+        if: success()
+        run: |
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="✅ Deploy succeeded | env: ${TARGET_ENV} | tag: ${IMAGE_TAG} | run: ${RUN_URL}"
+
+          curl \
+            --fail \
+            --request POST \
+            --header 'Content-type: application/json' \
+            --data "{\"text\":\"${MESSAGE}\"}" \
+            "$SLACK_WEBHOOK_URL"
+
+      - name: Notify deploy failure
+        if: failure()
+        run: |
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          MESSAGE="❌ Deploy failed | env: ${TARGET_ENV} | tag: ${IMAGE_TAG} | run: ${RUN_URL}"
+
+          curl \
+            --fail \
+            --request POST \
+            --header 'Content-type: application/json' \
+            --data "{\"text\":\"${MESSAGE}\"}" \
+            "$SLACK_WEBHOOK_URL"
