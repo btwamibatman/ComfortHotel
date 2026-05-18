@@ -130,6 +130,7 @@ jobs:
             gateway
             main-app
             order-service
+            payment-service
             product-service
           )
 
@@ -151,6 +152,7 @@ jobs:
           sed -i "s|image: comforthotel-chat-service:local|image: ghcr.io/${OWNER}/chat-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
           sed -i "s|image: comforthotel-app:local|image: ghcr.io/${OWNER}/main-app:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
           sed -i "s|image: comforthotel-order-service:local|image: ghcr.io/${OWNER}/order-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
+          sed -i "s|image: comforthotel-payment-service:local|image: ghcr.io/${OWNER}/payment-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
           sed -i "s|image: comforthotel-product-service:local|image: ghcr.io/${OWNER}/product-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
           sed -i "s|image: comforthotel-gateway:local|image: ghcr.io/${OWNER}/gateway:${IMAGE_TAG}|g" "$RENDERED_DIR/05-gateway.yml"
 
@@ -160,6 +162,7 @@ jobs:
             gateway
             app
             order-service
+            payment-service
             product-service
           )
 

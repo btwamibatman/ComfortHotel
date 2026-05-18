@@ -50,6 +50,7 @@ Main App
   +--> Auth Service --------> PostgreSQL App DB
   +--> Product Service -----> PostgreSQL Product DB
   +--> Order Service -------> PostgreSQL Order DB
+  +--> Payment Service -----> simulated payment authorization
   +--> Chat Service --------> PostgreSQL Chat DB
 
 Observability:
@@ -74,6 +75,7 @@ Kubernetes     -> declarative deployment, self-healing, HPA
 | `auth-service` | Authentication, sessions, admin/staff login |
 | `product-service` | Room catalog and product-style data |
 | `order-service` | Booking and order management |
+| `payment-service` | Simulated booking payment authorization |
 | `chat-service` | Contact/message workflow |
 | `gateway` | Nginx public entrypoint and API routing |
 | `docker-metrics-exporter` | Docker runtime metrics for observability |

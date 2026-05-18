@@ -22,6 +22,7 @@ jobs:
           - docker-metrics-exporter
           - main-app
           - order-service
+          - payment-service
           - product-service
 
     steps:
@@ -62,6 +63,9 @@ jobs:
             dockerfile: Dockerfile
           - image: order-service
             context: ./services/order-service
+            dockerfile: Dockerfile
+          - image: payment-service
+            context: ./services/payment-service
             dockerfile: Dockerfile
           - image: product-service
             context: ./services/product-service
@@ -105,6 +109,9 @@ jobs:
             dockerfile: Dockerfile
           - image: order-service
             context: ./services/order-service
+            dockerfile: Dockerfile
+          - image: payment-service
+            context: ./services/payment-service
             dockerfile: Dockerfile
           - image: product-service
             context: ./services/product-service
