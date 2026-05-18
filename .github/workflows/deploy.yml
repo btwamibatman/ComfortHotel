@@ -79,6 +79,28 @@ jobs:
       - name: Ensure namespace exists
         run: kubectl apply -f k8s/00-namespace.yml
 
+      - name: Configure app secrets
+        env:
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          SESSION_SECRET: ${{ secrets.SESSION_SECRET }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          MANAGER_PASSWORD: ${{ secrets.MANAGER_PASSWORD }}
+          USER_PASSWORD: ${{ secrets.USER_PASSWORD }}
+        run: |
+          : "${DB_PASSWORD:?DB_PASSWORD GitHub Secret is required}"
+          : "${SESSION_SECRET:?SESSION_SECRET GitHub Secret is required}"
+          : "${ADMIN_PASSWORD:?ADMIN_PASSWORD GitHub Secret is required}"
+          : "${MANAGER_PASSWORD:?MANAGER_PASSWORD GitHub Secret is required}"
+
+          kubectl -n "$NAMESPACE" create secret generic comforthotel-secrets \
+            --from-literal=DB_PASSWORD="$DB_PASSWORD" \
+            --from-literal=SESSION_SECRET="$SESSION_SECRET" \
+            --from-literal=ADMIN_PASSWORD="$ADMIN_PASSWORD" \
+            --from-literal=MANAGER_PASSWORD="$MANAGER_PASSWORD" \
+            --from-literal=USER_PASSWORD="$USER_PASSWORD" \
+            --dry-run=client \
+            -o yaml | kubectl apply -f -
+
       - name: Configure GHCR image pull secret
         env:
           GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
@@ -123,6 +145,7 @@ jobs:
           RENDERED_DIR="${RUNNER_TEMP}/k8s-rendered"
           rm -rf "$RENDERED_DIR"
           cp -R k8s "$RENDERED_DIR"
+          rm -f "$RENDERED_DIR/02-secrets.yml"
 
           sed -i "s|image: comforthotel-auth-service:local|image: ghcr.io/${OWNER}/auth-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
           sed -i "s|image: comforthotel-chat-service:local|image: ghcr.io/${OWNER}/chat-service:${IMAGE_TAG}|g" "$RENDERED_DIR/04-microservices.yml"
