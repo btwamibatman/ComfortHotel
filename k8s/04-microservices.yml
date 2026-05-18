@@ -46,6 +46,7 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
@@ -119,6 +120,7 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
@@ -244,6 +246,7 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
@@ -312,6 +315,7 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
@@ -458,6 +462,7 @@ spec:
               port: 3000
             initialDelaySeconds: 10
             periodSeconds: 10
+            failureThreshold: 3
           livenessProbe:
             httpGet:
               path: /health
