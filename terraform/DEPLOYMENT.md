@@ -49,11 +49,11 @@ public_source_ranges = ["0.0.0.0/0"]
 admin_source_ranges  = ["203.0.113.10/32"]
 ```
 
-The checked-in `terraform.tfvars` uses `e2-medium`, which is better suited for running the full Docker Compose stack but is not part of the Always Free VM shape.
+The checked-in `terraform.tfvars` and the Terraform default both use `e2-medium`, which is better suited for running the full Docker Compose stack but is not part of the Always Free VM shape.
 
-The variable defaults are intentionally conservative for GCP Always Free eligibility:
+Current Terraform defaults:
 
-- `machine_type = "e2-micro"`
+- `machine_type = "e2-medium"`
 - `boot_disk_type = "pd-standard"`
 - `boot_disk_size_gb = 30`
 - `region = "us-central1"` and `zone = "us-central1-a"`
