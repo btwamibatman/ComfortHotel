@@ -27,6 +27,7 @@ Terraform provisions:
 Open inbound TCP ports:
 
 - `80` - ComfortHotel web entrypoint through Nginx gateway, public.
+- `443` - ComfortHotel HTTPS entrypoint through Nginx gateway, public when Let's Encrypt is enabled.
 - `3001` - Grafana, public. This matches `docker-compose.yml` where Grafana is mapped as `3001:3000`.
 - `22` - SSH access, restricted by `admin_source_ranges`.
 - `9090` - Prometheus, restricted by `admin_source_ranges`.

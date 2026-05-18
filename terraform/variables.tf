@@ -58,7 +58,7 @@ variable "ssh_public_key_path" {
 }
 
 variable "public_source_ranges" {
-  description = "CIDR ranges allowed to reach public web ports 80 and 3001. Port 3001 is used because docker-compose.yml maps Grafana as 3001:3000."
+  description = "CIDR ranges allowed to reach public web ports 80, 443, and 3001. Port 3001 is used because docker-compose.yml maps Grafana as 3001:3000."
   type        = list(string)
   default     = ["0.0.0.0/0"]
 }
