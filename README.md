@@ -1,6 +1,6 @@
-﻿# Comfort Hotel - SRE Microservices Project
+﻿# Comfort Hotel - Microservices Project
 
-Comfort Hotel is a hotel booking system implemented as a containerized microservices application for an End Term SRE project. The project demonstrates Docker Compose, Docker Swarm, Kubernetes, Terraform, Ansible, Prometheus, Grafana, incident response, and capacity planning practices in one distributed system.
+Comfort Hotel is a hotel booking system implemented as a containerized microservices application.
 
 Site link: https://hotel.y-not-devs.com
 
@@ -315,18 +315,3 @@ If Kubernetes is configured:
 kubectl apply --dry-run=client -f k8s
 ```
 
-## Submission
-
-Final deliverable: upload only the PDF report with the GitHub repository link.
-
-The PDF should include:
-
-- GitHub repository URL;
-- architecture overview;
-- Docker Compose evidence;
-- Docker Swarm evidence;
-- Kubernetes evidence;
-- Terraform and Ansible evidence;
-- Prometheus targets and Grafana dashboard screenshots;
-- incident simulation and recovery evidence;
-- postmortem summary.
