@@ -2,7 +2,7 @@
 
 Comfort Hotel is a hotel booking system implemented as a containerized microservices application.
 
-Site link: https://hotel.y-not-devs.com
+Site link: https://hotel.y-not-devs.com(current status: Host is down)
 
 ## Project Scope
 
