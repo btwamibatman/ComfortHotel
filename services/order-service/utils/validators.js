@@ -15,6 +15,11 @@ function isValidPhone(phone) {
 function validateBookingDates(checkIn, checkOut) {
   const checkInDate = new Date(checkIn);
   const checkOutDate = new Date(checkOut);
+
+  if (Number.isNaN(checkInDate.getTime()) || Number.isNaN(checkOutDate.getTime())) {
+    return { valid: false, error: 'Invalid check-in or check-out date' };
+  }
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
