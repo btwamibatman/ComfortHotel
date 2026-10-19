@@ -1,32 +1,6 @@
 ﻿const roomsRepository = require('../repositories/roomsRepository');
 
-function validateRoomInput(payload) {
-  const { type, name, price, count } = payload;
-
-  if (!type || !name || price === undefined || count === undefined) {
-    return { error: 'Missing required fields' };
-  }
-
-  const numericPrice = Number(price);
-  const numericCount = Number(count);
-
-  if (Number.isNaN(numericPrice) || numericPrice < 0) {
-    return { error: 'Price must be a positive number' };
-  }
-
-  if (Number.isNaN(numericCount) || numericCount < 0) {
-    return { error: 'Count must be a positive integer' };
-  }
-
-  return {
-    data: {
-      type: type.trim().toLowerCase(),
-      name: name.trim(),
-      price: numericPrice,
-      count: Math.floor(numericCount),
-    },
-  };
-}
+const { validateRoomInput } = require('../utils/validators');
 
 async function listRooms() {
   return roomsRepository.listRooms();
