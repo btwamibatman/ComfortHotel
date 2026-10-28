@@ -35,7 +35,7 @@ async function getContactById(req, res) {
 }
 
 async function createContact(req, res) {
-  const { name, email, message } = req.body;
+  const { name, email, message } = req.body || {};
   const validationError = contactsService.validateContactInput({ name, email, message });
   if (validationError) {
     return res.status(400).json({ error: validationError });
@@ -68,7 +68,7 @@ async function updateContact(req, res) {
     return res.status(400).json({ error: 'Invalid ID format' });
   }
 
-  const { name, email, message } = req.body;
+  const { name, email, message } = req.body || {};
   const validationError = contactsService.validateContactInput({ name, email, message });
   if (validationError) {
     return res.status(400).json({ error: validationError });
