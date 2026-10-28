@@ -1,5 +1,5 @@
 ﻿const contactsRepository = require('../repositories/contactsRepository');
-const { isValidEmail } = require('../utils/validators');
+const { validateContactInput } = require('../utils/validators');
 const { buildListQuery } = require('../utils/query');
 
 async function listContacts(query) {
@@ -17,22 +17,6 @@ async function listContacts(query) {
 
 async function getContactById(id) {
   return contactsRepository.getContactById(id);
-}
-
-function validateContactInput({ name, email, message }) {
-  if (!name || !email || !message) {
-    return 'All fields are required';
-  }
-
-  if (!isValidEmail(email)) {
-    return 'Invalid email format';
-  }
-
-  if (name.length < 2 || name.length > 100) {
-    return 'Name must be between 2 and 100 characters';
-  }
-
-  return null;
 }
 
 async function createContact(payload) {
