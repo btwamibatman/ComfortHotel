@@ -1,4 +1,5 @@
 const express = require('express');
+const { validatePaymentInput } = require('../utils/validators');
 
 const router = express.Router();
 const payments = new Map();
@@ -8,26 +9,18 @@ function createPaymentId() {
 }
 
 router.post('/', (req, res) => {
-  const { bookingId, amount, currency = 'USD' } = req.body;
-  const numericAmount = Number(amount);
-
-  if (!bookingId || typeof bookingId !== 'string') {
-    return res.status(400).json({ error: 'bookingId is required' });
+  const validation = validatePaymentInput(req.body);
+  if (validation.error) {
+    return res.status(400).json({ error: validation.error });
   }
 
-  if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-    return res.status(400).json({ error: 'amount must be a positive number' });
-  }
-
-  if (!/^[A-Z]{3}$/.test(currency)) {
-    return res.status(400).json({ error: 'currency must be a 3-letter ISO code' });
-  }
+  const { bookingId, amount, currency } = validation.value;
 
   const payment = {
     paymentId: createPaymentId(),
     bookingId,
     status: 'authorized',
-    amount: numericAmount,
+    amount,
     currency,
     provider: 'simulation',
     createdAt: new Date().toISOString(),
