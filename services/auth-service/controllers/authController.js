@@ -1,5 +1,6 @@
 ﻿const authService = require('../services/authService');
 const logger = require('../utils/logger');
+const { establishAuthenticatedSession } = require('../utils/session');
 
 function validateCredentials(req, res) {
   const { username, password } = req.body;
@@ -17,10 +18,9 @@ function setUserHeaders(res, user) {
 }
 
 function persistSession(req, res, user, message) {
-  req.session.user = user;
-  req.session.save((err) => {
+  establishAuthenticatedSession(req, user, (err) => {
     if (err) {
-      logger.error('Session save error:', err);
+      logger.error('Session persistence error:', err);
       return res.status(500).json({ error: 'Session error' });
     }
 
