@@ -26,6 +26,10 @@ async function getBookingById(id) {
 }
 
 async function validateBookingInput(payload, { allowStatus = false } = {}) {
+  if (!payload || typeof payload !== 'object' || Array.isArray(payload)) {
+    return { error: 'Missing required fields' };
+  }
+
   const {
     roomType,
     guestName,
@@ -37,31 +41,55 @@ async function validateBookingInput(payload, { allowStatus = false } = {}) {
     status,
   } = payload;
 
-  if (!roomType || !guestName || !guestEmail || !checkInDate || !checkOutDate || !numberOfGuests) {
+  const requiredTextFields = [roomType, guestName, guestEmail, checkInDate, checkOutDate];
+  if (
+    requiredTextFields.some((value) => typeof value !== 'string' || !value.trim())
+    || numberOfGuests === undefined
+    || numberOfGuests === null
+    || (typeof numberOfGuests === 'string' && !numberOfGuests.trim())
+  ) {
     return { error: 'Missing required fields' };
   }
 
-  const roomConfig = await productClient.getRoomByType(roomType);
-  if (!roomConfig) {
-    return { error: 'Invalid room type' };
-  }
-
-  if (!isValidEmail(guestEmail)) {
-    return { error: 'Invalid email format' };
-  }
-
-  if (guestPhone && !isValidPhone(guestPhone)) {
+  if (guestPhone !== undefined && guestPhone !== null && typeof guestPhone !== 'string') {
     return { error: 'Invalid phone format' };
   }
 
-  const dateValidation = validateBookingDates(checkInDate, checkOutDate);
+  if (
+    payload.specialRequests !== undefined
+    && payload.specialRequests !== null
+    && typeof payload.specialRequests !== 'string'
+  ) {
+    return { error: 'Invalid special requests format' };
+  }
+
+  const normalizedRoomType = roomType.trim();
+  const normalizedEmail = guestEmail.trim().toLowerCase();
+  const normalizedPhone = guestPhone ? guestPhone.trim() : '';
+  const normalizedCheckIn = checkInDate.trim();
+  const normalizedCheckOut = checkOutDate.trim();
+
+  if (!isValidEmail(normalizedEmail)) {
+    return { error: 'Invalid email format' };
+  }
+
+  if (normalizedPhone && !isValidPhone(normalizedPhone)) {
+    return { error: 'Invalid phone format' };
+  }
+
+  const dateValidation = validateBookingDates(normalizedCheckIn, normalizedCheckOut);
   if (!dateValidation.valid) {
     return { error: dateValidation.error };
   }
 
-  const guests = parseInt(numberOfGuests, 10);
+  let guests = Number.NaN;
+  if (typeof numberOfGuests === 'number') {
+    guests = numberOfGuests;
+  } else if (typeof numberOfGuests === 'string' && /^\d+$/.test(numberOfGuests.trim())) {
+    guests = Number(numberOfGuests.trim());
+  }
 
-  if (Number.isNaN(guests) || guests < 1 || guests > 10) {
+  if (!Number.isSafeInteger(guests) || guests < 1 || guests > 10) {
     return { error: 'Number of guests must be between 1 and 10' };
   }
 
@@ -69,8 +97,13 @@ async function validateBookingInput(payload, { allowStatus = false } = {}) {
     return { error: 'Invalid status' };
   }
 
-  const checkIn = new Date(checkInDate);
-  const checkOut = new Date(checkOutDate);
+  const roomConfig = await productClient.getRoomByType(normalizedRoomType);
+  if (!roomConfig) {
+    return { error: 'Invalid room type' };
+  }
+
+  const checkIn = new Date(normalizedCheckIn);
+  const checkOut = new Date(normalizedCheckOut);
   const duration = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
   const calculatedPrice = roomConfig.price * duration * guests;
 
@@ -78,10 +111,10 @@ async function validateBookingInput(payload, { allowStatus = false } = {}) {
     roomConfig,
     data: {
       roomName: roomConfig.name,
-      roomType: roomType.trim(),
+      roomType: normalizedRoomType,
       guestName: guestName.trim(),
-      guestEmail: guestEmail.trim().toLowerCase(),
-      guestPhone: guestPhone ? guestPhone.trim() : '',
+      guestEmail: normalizedEmail,
+      guestPhone: normalizedPhone,
       checkInDate: checkIn,
       checkOutDate: checkOut,
       duration,
