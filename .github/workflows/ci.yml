@@ -37,6 +37,10 @@ jobs:
       - name: Run ESLint
         run: npx --yes eslint@9 ./services/${{ matrix.service }} --no-config-lookup
 
+      - name: Run service tests
+        if: matrix.service == 'docker-metrics-exporter'
+        run: npm test --prefix ./services/${{ matrix.service }}
+
   docker-build:
     name: Docker build (${{ matrix.image }})
     runs-on: ubuntu-latest

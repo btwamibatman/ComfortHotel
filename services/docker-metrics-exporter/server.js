@@ -3,37 +3,79 @@ const http = require('http');
 const PORT = Number(process.env.PORT || 9100);
 const DOCKER_SOCKET = process.env.DOCKER_SOCKET || '/var/run/docker.sock';
 const PROJECT_FILTER = process.env.PROJECT_FILTER || 'comforthotel';
+const DOCKER_REQUEST_TIMEOUT_MS = positiveInteger(process.env.DOCKER_REQUEST_TIMEOUT_MS, 5000);
+const DOCKER_MAX_RESPONSE_BYTES = positiveInteger(
+  process.env.DOCKER_MAX_RESPONSE_BYTES,
+  1024 * 1024
+);
 
-function dockerRequest(path) {
+function positiveInteger(value, fallback) {
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function dockerRequest(
+  path,
+  {
+    socketPath = DOCKER_SOCKET,
+    timeoutMs = DOCKER_REQUEST_TIMEOUT_MS,
+    maxResponseBytes = DOCKER_MAX_RESPONSE_BYTES,
+    requestFn = http.request,
+  } = {}
+) {
   return new Promise((resolve, reject) => {
-    const request = http.request(
+    let settled = false;
+    const rejectOnce = (error) => {
+      if (!settled) {
+        settled = true;
+        reject(error);
+      }
+    };
+    const request = requestFn(
       {
-        socketPath: DOCKER_SOCKET,
+        socketPath,
         path,
         method: 'GET',
       },
       (response) => {
         let body = '';
+        let bodyBytes = 0;
         response.setEncoding('utf8');
         response.on('data', (chunk) => {
+          bodyBytes += Buffer.byteLength(chunk);
+          if (bodyBytes > maxResponseBytes) {
+            const error = new Error(`Docker API response exceeded ${maxResponseBytes} bytes`);
+            response.destroy();
+            request.destroy(error);
+            rejectOnce(error);
+            return;
+          }
           body += chunk;
         });
         response.on('end', () => {
+          if (settled) {
+            return;
+          }
           if (response.statusCode < 200 || response.statusCode >= 300) {
-            reject(new Error(`Docker API returned ${response.statusCode}: ${body}`));
+            rejectOnce(new Error(`Docker API returned ${response.statusCode}`));
             return;
           }
 
           try {
-            resolve(JSON.parse(body));
+            const parsed = JSON.parse(body);
+            settled = true;
+            resolve(parsed);
           } catch (error) {
-            reject(error);
+            rejectOnce(error);
           }
         });
       }
     );
 
-    request.on('error', reject);
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(new Error(`Docker API request timed out after ${timeoutMs}ms`));
+    });
+    request.on('error', rejectOnce);
     request.end();
   });
 }
@@ -78,29 +120,35 @@ async function collectMetrics() {
   return `${lines.join('\n')}\n`;
 }
 
-const server = http.createServer(async (req, res) => {
-  if (req.url === '/health') {
-    res.writeHead(200, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ status: 'ok', service: 'docker-metrics-exporter' }));
-    return;
-  }
+function createServer() {
+  return http.createServer(async (req, res) => {
+    if (req.url === '/health') {
+      res.writeHead(200, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok', service: 'docker-metrics-exporter' }));
+      return;
+    }
 
-  if (req.url !== '/metrics') {
-    res.writeHead(404, { 'content-type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not found' }));
-    return;
-  }
+    if (req.url !== '/metrics') {
+      res.writeHead(404, { 'content-type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not found' }));
+      return;
+    }
 
-  try {
-    const metrics = await collectMetrics();
-    res.writeHead(200, { 'content-type': 'text/plain; version=0.0.4; charset=utf-8' });
-    res.end(metrics);
-  } catch (error) {
-    res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
-    res.end(`# Docker metrics collection failed: ${error.message}\n`);
-  }
-});
+    try {
+      const metrics = await collectMetrics();
+      res.writeHead(200, { 'content-type': 'text/plain; version=0.0.4; charset=utf-8' });
+      res.end(metrics);
+    } catch (error) {
+      res.writeHead(500, { 'content-type': 'text/plain; charset=utf-8' });
+      res.end(`# Docker metrics collection failed: ${error.message}\n`);
+    }
+  });
+}
 
-server.listen(PORT, () => {
-  console.log(`docker-metrics-exporter listening on ${PORT}`);
-});
+if (require.main === module) {
+  createServer().listen(PORT, () => {
+    console.log(`docker-metrics-exporter listening on ${PORT}`);
+  });
+}
+
+module.exports = { createServer, dockerRequest, escapeLabel, metricLine, positiveInteger };
