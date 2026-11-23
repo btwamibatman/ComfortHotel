@@ -1,16 +1,30 @@
 ﻿const config = require('../config/env');
 
-async function listRoomsForView() {
+const PRODUCT_REQUEST_TIMEOUT_MS = 2000;
+
+async function listRoomsForView({
+  fetchFn = global.fetch,
+  timeoutMs = PRODUCT_REQUEST_TIMEOUT_MS,
+} = {}) {
   if (!config.productServiceUrl) {
     throw new Error('PRODUCT_SERVICE_URL is required to render room views');
   }
 
-  const response = await fetch(`${config.productServiceUrl}/api/rooms`);
-  if (!response.ok) {
-    throw new Error(`Product service returned ${response.status}`);
-  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
-  return response.json();
+  try {
+    const response = await fetchFn(`${config.productServiceUrl}/api/rooms`, {
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      throw new Error(`Product service returned ${response.status}`);
+    }
+
+    return await response.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function sendView(pageName, locals = {}) {
@@ -41,6 +55,7 @@ function sendRoomImage(req, res) {
 }
 
 module.exports = {
+  listRoomsForView,
   sendView,
   sendRoomImage,
 };
